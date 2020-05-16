@@ -1,0 +1,27 @@
+{
+ "name": "secrethitlerdottv",
+ "version": "0.0.1-alpha.1",
+ "author": "Michael Spadaro",
+ "description": "Online multiplayer secret hitler game",
+ "license": "CC-BY-NC-SA-4.0",
+ "dependencies": {
+  "@google-cloud/datastore": "^5.1.0",
+  "express": "^4.17",
+  "socket.io": "^2.3.0"
+ },
+ "repository": {
+  "type": "git",
+  "url": "https://github.com/mjspadaro/secret-hitler-dot-tv.git"
+ },
+ "devDependencies": {
+  "node-sass": "^4.14.1",
+  "console.table": "^0.10.0"
+ },
+ "scripts": {
+  "build-css": "node-sass public/css/player.scss public/css/player.css",
+  "start": "node server.js"
+ },
+ "engines": {
+  "node": "12.x"
+ }
+}

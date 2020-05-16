@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.1.js"></script>
+		<script type="text/javascript" src="./js/player.js"></script>
+		<title>
+			Secret Hitler dot TV
+		</title>
+		<link rel="stylesheet" href="./css/player.css">
+	</head>
+	<body ontouchstart="">
+		<div id="player-info">Info lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+		<div id="error">Error lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+		<form id="join-game" name="join-game">
+			<label for="player-name">Your name:</label>
+			<div class="text-field">
+				<input type="text" id="player-name" maxlength="12">
+			</div>
+			<label for="game-id">Game code:</label>
+			<div class="text-field">
+				<input type="text" id="game-id" maxlength="4">
+			</div>
+			<div>
+				<button>Join Game</button>
+			</div>
+		</form>
+		
+		<form id="player-action" name="player-action">
+			<input type="hidden" id="player-action-submitted" value="true" />
+			<input type="hidden" id="player-action-name" value="" />
+			<h3 class="player-action-headline">Lorem ipsum <em>dolor</em> sit amet, consectetur adipiscing elit. Ut ut.</h3>
+			<div class="player-action-body">Lorem ipsum dolor sit amet, <em>consectetur</em> adipiscing elit. Ut ut.</div>
+			<div class="player-action-option">
+				<input type="radio" id="player-action-option-1" name="player-action-option" value="1" checked />
+				<label for="player-action-option-1">Aenean porta</label>
+			</div>
+			<div class="player-action-option">
+				<input type="radio" id="player-action-option-2" name="player-action-option" value="2" checked />
+				<label for="player-action-option-2">Suspendisse</label>
+			</div>
+			<div class="player-action-option">
+				<input type="radio" id="player-action-option-3" name="player-action-option" value="3" checked />
+				<label for="player-action-option-3">Maecenas sollicitudin</label>
+			</div>
+			<div class="player-action-option">
+				<input type="radio" id="player-action-option-4" name="player-action-option" value="4" checked />
+				<label for="player-action-option-4">Cras posuere</label>
+			</div>
+			<div class="player-action-option">
+				<input type="radio" id="player-action-option-5" name="player-action-option" value="5" checked />
+				<label for="player-action-option-5">Lobortis</label>
+			</div>
+			<div class="player-action-submit" name="player-action-submit"><button onClick="()=>true">Sollicitudin</button></div>
+		</form>
+	</body>
+</html>

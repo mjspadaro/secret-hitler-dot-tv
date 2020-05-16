@@ -1,0 +1,164 @@
+@font-face {
+  font-family: 'AHAMONO-Monospaced';
+  src: url("/fonts/AHAMONO-Monospaced.otf") format("opentype"); }
+
+@font-face {
+  font-family: 'Futura-Medium';
+  src: url("/fonts/Futura-Medium.ttf") format("truetype"); }
+
+body {
+  font-family: 'Futura-Medium';
+  font-size: 17px;
+  color: #efe1bf;
+  background: #373633;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0); }
+
+#player-info, #error {
+  max-width: 260px;
+  position: relative;
+  margin: 50px auto 0;
+  border-radius: 5px;
+  font-size: inherit;
+  padding: 20px; }
+
+#player-info {
+  background: #efe1bf;
+  color: #373633; }
+
+#error {
+  color: #efe1bf;
+  background: #990200; }
+
+#player-action, #player-info, #error {
+  display: none; }
+
+form {
+  max-width: 300px;
+  position: relative;
+  margin: 50px auto 0;
+  font-size: inherit; }
+
+.player-action-headline {
+  font-weight: normal; }
+
+.player-action-body {
+  margin-bottom: 20px; }
+
+em {
+  text-transform: uppercase;
+  font-style: normal;
+  color: #fdc34a; }
+
+.text-field {
+  position: relative;
+  display: block;
+  background: #fff5e1;
+  border: 2px solid #fee4af;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 5px; }
+
+.text-field > input[type=text] {
+  font-family: 'AHAMONO-Monospaced';
+  display: block;
+  color: #373633;
+  background: transparent;
+  border: 0px;
+  width: 100%;
+  font-size: inherit;
+  outline: none; }
+
+#game-id {
+  text-transform: uppercase; }
+
+button {
+  position: relative;
+  display: block;
+  color: #efe1bf;
+  background: #e66443;
+  border: 2px solid #f2ae9d;
+  padding: 10px 20px;
+  margin-top: 20px;
+  margin-bottom: 5px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 3px;
+  width: 90%;
+  font-size: inherit;
+  outline-color: #fdc34a;
+  -webkit-appearance: none; }
+
+button:active {
+  background: #f2ae9d; }
+
+button:disabled, input:disabled {
+  opacity: 0.5; }
+
+.player-action-option {
+  position: relative;
+  display: block; }
+  .player-action-option label {
+    font-family: 'AHAMONO-Monospaced';
+    display: block;
+    background: #fff5e1;
+    color: #373633;
+    border-radius: 5px;
+    padding: 10px 20px;
+    border: 2px solid #fee4af;
+    margin-bottom: 5px;
+    cursor: pointer; }
+    .player-action-option label:after, .player-action-option label:before {
+      content: "";
+      position: absolute;
+      right: 11px;
+      top: 11px;
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      background: #fedc96; }
+    .player-action-option label:before {
+      background: transparent;
+      transition: 0.1s width cubic-bezier(0.075, 0.82, 0.165, 1) 0s, 0.3s height cubic-bezier(0.075, 0.82, 0.165, 2) 0.1s;
+      z-index: 2;
+      overflow: hidden;
+      background-repeat: no-repeat;
+      background-size: 13px;
+      background-position: center;
+      width: 0;
+      height: 0;
+      background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNS4zIDEzLjIiPiAgPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTE0LjcuOGwtLjQtLjRhMS43IDEuNyAwIDAgMC0yLjMuMUw1LjIgOC4yIDMgNi40YTEuNyAxLjcgMCAwIDAtMi4zLjFMLjQgN2ExLjcgMS43IDAgMCAwIC4xIDIuM2wzLjggMy41YTEuNyAxLjcgMCAwIDAgMi40LS4xTDE1IDMuMWExLjcgMS43IDAgMCAwLS4yLTIuM3oiIGRhdGEtbmFtZT0iUGZhZCA0Ii8+PC9zdmc+); }
+  .player-action-option input[type="radio"] {
+    display: none;
+    position: absolute;
+    width: 100%;
+    appearance: none; }
+    .player-action-option input[type="radio"]:checked + label {
+      background: #fedc96;
+      animation-name: blink;
+      animation-duration: 1s;
+      border-color: #fdc34a; }
+      .player-action-option input[type="radio"]:checked + label:after {
+        background: #fdc34a; }
+      .player-action-option input[type="radio"]:checked + label:before {
+        width: 20px;
+        height: 20px; }
+
+@keyframes blink {
+  0% {
+    background-color: #fedc96; }
+  10% {
+    background-color: #fedc96; }
+  11% {
+    background-color: #fee4af; }
+  29% {
+    background-color: #fee4af; }
+  30% {
+    background-color: #fedc96; }
+  50% {
+    background-color: #fee4af; }
+  45% {
+    background-color: #fedc96; }
+  50% {
+    background-color: #fee4af; }
+  100% {
+    background-color: #fedc96; } }
