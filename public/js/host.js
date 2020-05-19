@@ -27,6 +27,7 @@ const assets = [
 	'pile-discard',
 	'pile-draw',
 	'player-folder',
+	'player-folder-highlight',
 	'policy-back',
 	'policy-fascist',
 	'policy-liberal',

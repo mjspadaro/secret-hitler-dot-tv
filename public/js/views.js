@@ -974,6 +974,13 @@ class Avatar extends PIXI.Sprite {
 		this.label.x = this.width / 2;
 		this.addChild(this.label);
 	
+		this.highlight = new PIXI.Sprite(resources.playerFolderHighlight.texture);
+		this.highlight.anchor.x = 0.5;
+		this.highlight.anchor.y = 0.5;
+		this.highlight.x = this.width / 2;
+		this.highlight.y = this.height / 2;
+		this.addChild(this.highlight);
+		
 		this.presidentMarker = new PIXI.Sprite(resources.president.texture);
 		this.presidentMarker.anchor.x = 0.5;
 		this.presidentMarker.y = 50;
@@ -992,8 +999,9 @@ class Avatar extends PIXI.Sprite {
 
 	update(player) {
 		this.label.text = player.name;
-		this.chancellorMarker.visible = player.isChancellor;
+		this.chancellorMarker.visible = player.isChancellor || player.isNominee;
 		this.presidentMarker.visible = player.isPresident;
+		this.highlight.visible = !player.ask.complete;
 	}
 
 }
