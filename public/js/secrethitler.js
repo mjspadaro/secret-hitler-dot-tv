@@ -318,39 +318,39 @@ SecretHitlerGame.prototype.initRules = function () {
 			this.fascistCount = 1;
 			this.hitlerKnowsFascists = true;
 			this.executiveActions = [
-				'startNomination', // fascist score = 0
-				'startNomination',  // 1
-				'startNomination',  // 2
+				'beforeNomination', // fascist score = 0
+				'beforeNomination',  // 1
+				'beforeNomination',  // 2
 				'startPolicyPeek',  // 3
 				'startExecution',  // 4
 				'startExecution',	 // 5
-				'startNomination']; // 6
+				'beforeNomination']; // 6
 			break;
 		case 7:
 		case 8:
 			this.fascistCount = 2;
 			this.hitlerKnowsFascists = false;
 			this.executiveActions = [
-				'startNomination', // fascist score = 0
-				'startNomination',  // 1
+				'beforeNomination', // fascist score = 0
+				'beforeNomination',  // 1
 				'startInvestigation',  // 2
 				'startSpecialElection',  // 3
 				'startExecution',  // 4
 				'startExecution',	 // 5
-				'startNomination']; // 6			
+				'beforeNomination']; // 6			
 			break;			
 		case 9:
 		case 10:
 			this.fascistCount = 3;
 			this.hitlerKnowsFascists = false;
 			this.executiveActions = [
-				'startNomination', // fascist score = 0
-				'startNomination',  // 1
+				'beforeNomination', // fascist score = 0
+				'beforeNomination',  // 1
 				'startInvestigation',  // 2
 				'startSpecialElection',  // 3
 				'startExecution',  // 4
 				'startExecution',	 // 5
-				'startNomination']; // 6			
+				'beforeNomination']; // 6			
 			break;
 	}
 	
@@ -712,8 +712,14 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 
 			this.getPresident().input(this.t.startNomination.question, options, 'nominateChancellor' );
 		
-			this.next = 'startElection';
+			this.next = 'beforeElection';
 
+		},
+		
+		beforeElection: function () {
+			
+			this.getPresident().input("It's time to vote. Make your best case to the other players before starting the election.", [{text: "Start Election", value: 1}], 'startElection' );
+			
 		},
 
 		// players vote on president/chancellor
@@ -1001,6 +1007,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 		nominateChancellor: 
 		function (nominator, nomineeIndex) { 
 			this.players[nomineeIndex].isNominee = true;
+			
 		},
 
 		vote:

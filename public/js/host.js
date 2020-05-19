@@ -93,6 +93,7 @@ const ROUTE_TABLE = [
 	{ event: 'startNomination', view: 'StartGameView', method: 'unload'  },
 	{ event: 'startNomination', view: 'StatusView', method: 'updateBreadcrumb4'  },
 	{ event: 'startNomination', view: 'NominationView', method: 'load'  },
+	{ event: 'nominateChancellor', view: 'NominationView', method: 'onNominateChancellor'  },
 		
 	{ event: 'startElection', view: 'NominationView', method: 'unload', priority: 0  },
 	{ event: 'startElection', view: 'ElectionView', method: 'load', priority: 1  },
@@ -107,11 +108,9 @@ const ROUTE_TABLE = [
 	{ event: 'drawChaosCard', view: 'ChaosView', method: 'onDrawChaosCard', priority: 1 },
 	{ event: 'drawChaosCard', view: 'ChaosView', method: 'unload', priority: 2 },
 	
-	{ event: 'startPresidentLegislativeSession', view: 'ElectionView', method: 'unload'},
-	{ event: 'startPresidentLegislativeSession', view: 'LegislativeView', method: 'load'},
-	
-	{ event: 'drawPolicies', view: 'LegislativeView', method: 'onDrawPolicies'},
-	
+	{ event: 'drawPolicies', view: 'ElectionView', method: 'unload'},
+	{ event: 'drawPolicies', view: 'LegislativeView', method: 'load'},
+		
 	{ event: 'discard', view: 'LegislativeView', method: 'onDiscard'},
 	
 	{ event: 'startChancellorLegislativeSession', view: 'LegislativeView', method: 'onStartChancellorLegislativeSession'},

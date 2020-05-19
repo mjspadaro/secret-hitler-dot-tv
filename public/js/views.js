@@ -464,7 +464,12 @@ const VIEW_CLASSES = [
 		onNominateChancellor(e) {
 			let president = e.state.players.find(p => p.isPresident);			
 			let nominee = e.state.players.find(p => p.isNominee);			
-
+			this.clear();
+			let headline = `${president.name} has nominated ${nominee.name} for chancellor.`;
+			
+			this.setHeadline(headline).then(new TransitionPause());
+			this.addCard(this.resources.playerFolder.texture, this.resources.playerFolder.texture, nominee.name);
+			let pause = new TransitionPause();
 		}
 	
 	},
@@ -480,7 +485,7 @@ const VIEW_CLASSES = [
 			super.load(e);		
 			let president = e.state.players.find(p => p.isPresident);
 			let nominee = e.state.players.find(p => p.isNominee);
-			this.setHeadline(`${president.name} has nominated ${nominee.name} for chancellor. Cast your vote!`);
+			this.setHeadline(`Cast your vote for ${president.name} as president and ${nominee.name} as chancellor.`);
 		}
 	
 	
@@ -545,12 +550,6 @@ const VIEW_CLASSES = [
 			super.load(e);
 			this.cards.options.width = 675;
 			this.cards.x = 575;
-			let president = e.state.players.find(p => p.isPresident);
-			this.setHeadline(`${president.name}: Draw 3 policies from the policy deck.`);
-
-		}
-
-		onDrawPolicies(e) {	
 			let agenda = e.state.agenda;
 			let president = e.state.players.find(p => p.isPresident);
 			this.setHeadline(`${president.name}: Discard 1 policy from the agenda.`);
