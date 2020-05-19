@@ -321,9 +321,9 @@ SecretHitlerGame.prototype.initRules = function () {
 				'beforeNomination', // fascist score = 0
 				'beforeNomination',  // 1
 				'beforeNomination',  // 2
-				'startPolicyPeek',  // 3
-				'startExecution',  // 4
-				'startExecution',	 // 5
+				'beforePolicyPeek',  // 3
+				'beforeExecution',  // 4
+				'beforeExecution',	 // 5
 				'beforeNomination']; // 6
 			break;
 		case 7:
@@ -333,10 +333,10 @@ SecretHitlerGame.prototype.initRules = function () {
 			this.executiveActions = [
 				'beforeNomination', // fascist score = 0
 				'beforeNomination',  // 1
-				'startInvestigation',  // 2
-				'startSpecialElection',  // 3
-				'startExecution',  // 4
-				'startExecution',	 // 5
+				'beforeInvestigation',  // 2
+				'beforeSpecialElection',  // 3
+				'beforeExecution',  // 4
+				'beforeExecution',	 // 5
 				'beforeNomination']; // 6			
 			break;			
 		case 9:
@@ -346,10 +346,10 @@ SecretHitlerGame.prototype.initRules = function () {
 			this.executiveActions = [
 				'beforeNomination', // fascist score = 0
 				'beforeNomination',  // 1
-				'startInvestigation',  // 2
-				'startSpecialElection',  // 3
-				'startExecution',  // 4
-				'startExecution',	 // 5
+				'beforeInvestigation',  // 2
+				'beforeSpecialElection',  // 3
+				'beforeExecution',  // 4
+				'beforeExecution',	 // 5
 				'beforeNomination']; // 6			
 			break;
 	}
@@ -940,6 +940,10 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 	
 		},
 
+		beforeSpecialElection : function () {
+			this.getPresident().input("You now have the executive power to call a Special Election.", [{text: "Start Special Election", value: 1}], 'startSpecialElection' );
+		},
+
 		// switch the president to the player chosen in callSpecialElection 
 		startSpecialElection : function () {
 	
@@ -959,6 +963,10 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			this.next = 'beforeNomination';
 		},
 
+		beforePolicyPeek : function () {
+			this.getPresident().input("You now have the policy peek executive power.", [{text: "Start Policy Peek", value: 1}], 'startPolicyPeek' );
+		},
+
 		// president is shown the top 3 cards of the policy deck
 		startPolicyPeek : function () {
 			
@@ -968,6 +976,11 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			this.next = 'beforeNomination';
 
 		},
+
+		beforeInvestigation : function () {
+			this.getPresident().input("You now have the executive power to investigate another player's party loyalty.", [{text: "Start Investigation", value: 1}], 'startInvestigation' );
+		},
+
 
 		// president chooses a player to investigate their party status
 		startInvestigation : function () {
@@ -986,6 +999,11 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			this.next = 'beforeNomination';
 	
 		},
+
+		beforeExecution : function () {
+			this.getPresident().input("You now have the executive power to execute another player.", [{text: "Start Execution", value: 1}], 'startExecution' );
+		},
+
 
 		// president chooses a player to execute
 		startExecution : function () {
