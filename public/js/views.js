@@ -1118,8 +1118,10 @@ class PlayerList extends PIXI.Container {
 			}
 			avatar.y = i * ySpacing + offsetY;
 			if (player.isChancellor || player.isPresident || player.isNominee) {
-				avatar.x = 0; //-150;
 				offsetY = offsetY + Math.max(0, 100 - ySpacing);
+			}
+			if (!player.ask.complete) {
+				avatar.x = 25;
 			} else {
 				avatar.x = 0;
 			}
