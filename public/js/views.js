@@ -464,7 +464,12 @@ const VIEW_CLASSES = [
 		onNominateChancellor(e) {
 			let president = e.state.players.find(p => p.isPresident);			
 			let nominee = e.state.players.find(p => p.isNominee);			
-
+			this.clear();
+			let headline = `${president.name} has nominated ${nominee.name} for chancellor.`;
+			
+			this.setHeadline(headline).then(new TransitionPause());
+			this.addCard(this.resources.playerFolder.texture, this.resources.playerFolder.texture, nominee.name);
+			let pause = new TransitionPause();
 		}
 	
 	},
@@ -480,7 +485,7 @@ const VIEW_CLASSES = [
 			super.load(e);		
 			let president = e.state.players.find(p => p.isPresident);
 			let nominee = e.state.players.find(p => p.isNominee);
-			this.setHeadline(`${president.name} has nominated ${nominee.name} for chancellor. Cast your vote!`);
+			this.setHeadline(`Cast your vote for ${president.name} as president and ${nominee.name} as chancellor.`);
 		}
 	
 	
@@ -545,12 +550,6 @@ const VIEW_CLASSES = [
 			super.load(e);
 			this.cards.options.width = 675;
 			this.cards.x = 575;
-			let president = e.state.players.find(p => p.isPresident);
-			this.setHeadline(`${president.name}: Draw 3 policies from the policy deck.`);
-
-		}
-
-		onDrawPolicies(e) {	
 			let agenda = e.state.agenda;
 			let president = e.state.players.find(p => p.isPresident);
 			this.setHeadline(`${president.name}: Discard 1 policy from the agenda.`);
@@ -975,6 +974,13 @@ class Avatar extends PIXI.Sprite {
 		this.label.x = this.width / 2;
 		this.addChild(this.label);
 	
+		this.highlight = new PIXI.Sprite(resources.playerFolderHighlight.texture);
+		this.highlight.anchor.x = 0.5;
+		this.highlight.anchor.y = 0.5;
+		this.highlight.x = this.width / 2;
+		this.highlight.y = this.height / 2;
+		this.addChild(this.highlight);
+		
 		this.presidentMarker = new PIXI.Sprite(resources.president.texture);
 		this.presidentMarker.anchor.x = 0.5;
 		this.presidentMarker.y = 50;
@@ -993,8 +999,9 @@ class Avatar extends PIXI.Sprite {
 
 	update(player) {
 		this.label.text = player.name;
-		this.chancellorMarker.visible = player.isChancellor;
+		this.chancellorMarker.visible = player.isChancellor || player.isNominee;
 		this.presidentMarker.visible = player.isPresident;
+		this.highlight.visible = !player.ask.complete;
 	}
 
 }
@@ -1110,9 +1117,11 @@ class PlayerList extends PIXI.Container {
 				avatar.update(player);
 			}
 			avatar.y = i * ySpacing + offsetY;
-			if (player.isChancellor || player.isPresident) {
-				avatar.x = 0; //-150;
-				offsetY = offsetY + 50;
+			if (player.isChancellor || player.isPresident || player.isNominee) {
+				offsetY = offsetY + Math.max(0, 100 - ySpacing);
+			}
+			if (!player.ask.complete) {
+				avatar.x = 25;
 			} else {
 				avatar.x = 0;
 			}

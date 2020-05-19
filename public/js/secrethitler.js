@@ -24,7 +24,7 @@ function SecretHitlerGame(gameId = '') {
 	// set to true while the game is started and false when the game is over
 	this.started = false;
 	
-	this.next = 'startNomination';
+	this.next = 'beforeNomination';
 	
 	this.policyDeck = new Deck();
 	this.turnOrderDeck = new Deck();
@@ -51,13 +51,13 @@ function SecretHitlerGame(gameId = '') {
 	// an array which points to executive action functions
 	// changed by initRules to suit the current # of players
 	this.executiveActions = [
-		'startNomination', // fascist score = 0
-		'startNomination',  // 1
-		'startNomination',  // 2
-		'startNomination',  // 3
-		'startNomination',  // 4
-		'startNomination',	 // 5
-		'startNomination']; // 6
+		'beforeNomination', // fascist score = 0
+		'beforeNomination',  // 1
+		'beforeNomination',  // 2
+		'beforeNomination',  // 3
+		'beforeNomination',  // 4
+		'beforeNomination',	 // 5
+		'beforeNomination']; // 6
 		
 	// store a history of game events and state
 	this.history = [];
@@ -318,39 +318,39 @@ SecretHitlerGame.prototype.initRules = function () {
 			this.fascistCount = 1;
 			this.hitlerKnowsFascists = true;
 			this.executiveActions = [
-				'startNomination', // fascist score = 0
-				'startNomination',  // 1
-				'startNomination',  // 2
-				'startPolicyPeek',  // 3
-				'startExecution',  // 4
-				'startExecution',	 // 5
-				'startNomination']; // 6
+				'beforeNomination', // fascist score = 0
+				'beforeNomination',  // 1
+				'beforeNomination',  // 2
+				'beforePolicyPeek',  // 3
+				'beforeExecution',  // 4
+				'beforeExecution',	 // 5
+				'beforeNomination']; // 6
 			break;
 		case 7:
 		case 8:
 			this.fascistCount = 2;
 			this.hitlerKnowsFascists = false;
 			this.executiveActions = [
-				'startNomination', // fascist score = 0
-				'startNomination',  // 1
-				'startInvestigation',  // 2
-				'startSpecialElection',  // 3
-				'startExecution',  // 4
-				'startExecution',	 // 5
-				'startNomination']; // 6			
+				'beforeNomination', // fascist score = 0
+				'beforeNomination',  // 1
+				'beforeInvestigation',  // 2
+				'beforeSpecialElection',  // 3
+				'beforeExecution',  // 4
+				'beforeExecution',	 // 5
+				'beforeNomination']; // 6			
 			break;			
 		case 9:
 		case 10:
 			this.fascistCount = 3;
 			this.hitlerKnowsFascists = false;
 			this.executiveActions = [
-				'startNomination', // fascist score = 0
-				'startNomination',  // 1
-				'startInvestigation',  // 2
-				'startSpecialElection',  // 3
-				'startExecution',  // 4
-				'startExecution',	 // 5
-				'startNomination']; // 6			
+				'beforeNomination', // fascist score = 0
+				'beforeNomination',  // 1
+				'beforeInvestigation',  // 2
+				'beforeSpecialElection',  // 3
+				'beforeExecution',  // 4
+				'beforeExecution',	 // 5
+				'beforeNomination']; // 6			
 			break;
 	}
 	
@@ -672,7 +672,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 		startGame: function ()
 		{
 			this.start();
-			this.next = 'startNomination';
+			this.next = 'beforeNomination';
 		},
 		
 		// end the game
@@ -681,10 +681,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			this.started = false;
 		},
 
-		// president nominates a new chancellor
-		startNomination : function () {
-	
-			var options = [];
+		beforeNomination : function () {
 		
 			// clear the nominee and move the president to the next player
 			for (p of this.players) {
@@ -696,6 +693,15 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			if (!this.isSpecialElection) {
 				this.setNextPresident();
 			}
+			
+			this.getPresident().input("You're now the president. You may start the nomination process when ready.", [{text: "Start Nomination", value: 1}], 'startNomination' );
+		},
+
+		// president nominates a new chancellor
+		startNomination : function () {
+	
+			var options = [];
+
 	
 			var eligibleNominees = this.getEligibleNominees();
 	
@@ -706,8 +712,14 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 
 			this.getPresident().input(this.t.startNomination.question, options, 'nominateChancellor' );
 		
-			this.next = 'startElection';
+			this.next = 'beforeElection';
 
+		},
+		
+		beforeElection: function () {
+			
+			this.getPresident().input("It's time to vote. Make your best case to the other players before starting the election.", [{text: "Start Election", value: 1}], 'startElection' );
+			
 		},
 
 		// players vote on president/chancellor
@@ -776,7 +788,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 					this.next = 'startChaos';
 				}
 				else {
-					this.next = 'startNomination';
+					this.next = 'beforeNomination';
 				}
 			
 				data = 0;
@@ -824,7 +836,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 				this.electionTracker = 0;
 			}
 	
-			this.next = 'startNomination';
+			this.next = 'beforeNomination';
 
 		},
 
@@ -909,7 +921,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 						this.next = this.executiveActions[this.fascistScore];		
 					}
 					else {
-						this.next = 'startNomination';
+						this.next = 'beforeNomination';
 					}
 				}
 			}
@@ -928,6 +940,10 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 	
 		},
 
+		beforeSpecialElection : function () {
+			this.getPresident().input("You now have the executive power to call a Special Election.", [{text: "Start Special Election", value: 1}], 'startSpecialElection' );
+		},
+
 		// switch the president to the player chosen in callSpecialElection 
 		startSpecialElection : function () {
 	
@@ -944,7 +960,11 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			}
 
 			this.getPresident().input(this.t.startSpecialElection.question, options, 'callSpecialElection');
-			this.next = 'startNomination';
+			this.next = 'beforeNomination';
+		},
+
+		beforePolicyPeek : function () {
+			this.getPresident().input("You now have the policy peek executive power.", [{text: "Start Policy Peek", value: 1}], 'startPolicyPeek' );
 		},
 
 		// president is shown the top 3 cards of the policy deck
@@ -953,9 +973,14 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			this.getPresident().policyPeek = Object.assign([], this.policyDeck.cards).splice(0,3);
 			this.getPresident().input(this.t.startPolicyPeek.peek + ` ${this.policyDeck.cards[0]}, ${this.policyDeck.cards[1]}, ${this.policyDeck.cards[2]}`, [{text: "Ok", value: 1}], 'confirmPolicyPeek');
 
-			this.next = 'startNomination';
+			this.next = 'beforeNomination';
 
 		},
+
+		beforeInvestigation : function () {
+			this.getPresident().input("You now have the executive power to investigate another player's party loyalty.", [{text: "Start Investigation", value: 1}], 'startInvestigation' );
+		},
+
 
 		// president chooses a player to investigate their party status
 		startInvestigation : function () {
@@ -971,9 +996,14 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			}	
 			
 			this.getPresident().input(this.t.startInvestigation.question, options, 'investigate');
-			this.next = 'startNomination';
+			this.next = 'beforeNomination';
 	
 		},
+
+		beforeExecution : function () {
+			this.getPresident().input("You now have the executive power to execute another player.", [{text: "Start Execution", value: 1}], 'startExecution' );
+		},
+
 
 		// president chooses a player to execute
 		startExecution : function () {
@@ -995,6 +1025,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 		nominateChancellor: 
 		function (nominator, nomineeIndex) { 
 			this.players[nomineeIndex].isNominee = true;
+			
 		},
 
 		vote:
@@ -1013,7 +1044,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 		function (president, consent) {
 			if (consent == 1) {
 				this.agenda = [this.t.policy.veto];
-				this.next = 'startNomination';
+				this.next = 'beforeNomination';
 			}
 			else {
 				var options = this.agenda.map((text, value) => ({text: text, value: value}));
@@ -1047,7 +1078,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 				this.next = 'endGame';
 			}
 			else {
-				this.next = 'startNomination';				
+				this.next = 'beforeNomination';				
 			}
 		
 		},
