@@ -38,6 +38,8 @@ const assets = [
 	'role-liberal',
 	'status-background',
 	'status-foreground',
+	'agenda-box',
+	'table-headline-background',
 ];
 
 const loremIpsum = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna.";
@@ -77,8 +79,11 @@ const DEFAULT_ROUTE = {
 const ROUTE_TABLE = [
 	
 	{ event: (e) => ['requestNewGame', 'replacePlayer', 'hostNewGame', 'joinGame', 'startGame'].indexOf(e.eventName) == -1 , view: 'TableView', method: 'update', synchronous: false, priority: 10  },
-	{ event: (e) => ['requestNewGame', 'replacePlayer', 'hostNewGame', 'joinGame', 'startGame'].indexOf(e.eventName) == -1 , view: 'StatusView', method: 'update', synchronous: false, priority: 10  },
-	{ event: 'test', view: (v) => ['TableView', 'StatusView'].indexOf(v.constructor.name) == -1 && v.loaded, method: 'unload', priority: 0 },
+	{ event: (e) => ['requestNewGame', 'replacePlayer', 'hostNewGame', 'joinGame', 'startGame'].indexOf(e.eventName) == -1 , view: 'StatusView', method: 'updateScore', synchronous: false, priority: 10  },
+	{ event: (e) => ['requestNewGame', 'replacePlayer', 'hostNewGame', 'joinGame', 'startGame'].indexOf(e.eventName) == -1 , view: 'StatusView', method: 'updateBreadcrumbs', synchronous: false, priority: 0  },
+	{ event: (e) => ['requestNewGame', 'replacePlayer', 'hostNewGame', 'joinGame', 'startGame'].indexOf(e.eventName) == -1 , view: 'PlayerListView', method: 'update', synchronous: false, priority: 10  },
+
+	{ event: 'test', view: (v) => ['TableView', 'StatusView', 'PlayerListView'].indexOf(v.constructor.name) == -1 && v.loaded, method: 'unload', priority: 0 },
 	
 	{ event: 'requestNewGame', view: 'LobbyView', method: 'load'  },
 		
@@ -89,12 +94,18 @@ const ROUTE_TABLE = [
 	{ event: 'startGame', view: 'LobbyView', method: 'unload', priority: 0 },
 	{ event: 'startGame', view: 'TableView', method: 'load', priority: 1, synchronous: false  },
 	{ event: 'startGame', view: 'StatusView', method: 'load', priority: 1, synchronous: false  },
+	{ event: 'startGame', view: 'PlayerListView', method: 'load', priority: 1, synchronous: false  },
 	{ event: 'startGame', view: 'StartGameView', method: 'load', priority: 2 },
 	
-	{ event: 'startNomination', view: 'StartGameView', method: 'unload'  },
-	{ event: 'startNomination', view: 'StatusView', method: 'updateBreadcrumb4'  },
+	{ event: 'beforeNomination', view: 'PlayerListView', method: 'update', priority: 0  },
+	{ event: 'beforeNomination', view: 'StartGameView', method: 'unload'  },
+	{ event: 'beforeNomination', view: 'TableView', method: 'onBeforeNomination'  },
+
+	{ event: 'startNomination', view: 'TableView', method: 'onStartNomination'  },		
 	{ event: 'startNomination', view: 'NominationView', method: 'load'  },
-	{ event: 'nominateChancellor', view: 'NominationView', method: 'onNominateChancellor'  },
+	
+	{ event: 'nominateChancellor', view: 'PlayerListView', method: 'onNominateChancellor', priority: 1  },
+	{ event: 'nominateChancellor', view: 'NominationView', method: 'onNominateChancellor', priority: 2  },
 		
 	{ event: 'startElection', view: 'NominationView', method: 'unload', priority: 0  },
 	{ event: 'startElection', view: 'ElectionView', method: 'load', priority: 1  },
@@ -108,35 +119,48 @@ const ROUTE_TABLE = [
 
 	{ event: 'drawChaosCard', view: 'ChaosView', method: 'onDrawChaosCard', priority: 1 },
 	{ event: 'drawChaosCard', view: 'ChaosView', method: 'unload', priority: 2 },
+
+	{ event: 'startPresidentLegislativeSession', view: 'ElectionView', method: 'unload'},
+	{ event: 'startPresidentLegislativeSession', view: 'TableView', method: 'onStartPresidentLegislativeSession'},
 	
-	{ event: 'drawPolicies', view: 'ElectionView', method: 'unload'},
-	{ event: 'drawPolicies', view: 'LegislativeView', method: 'load'},
-		
-	{ event: 'discard', view: 'LegislativeView', method: 'onDiscard'},
-	
-	{ event: 'startChancellorLegislativeSession', view: 'LegislativeView', method: 'onStartChancellorLegislativeSession'},
+	{ event: 'drawPolicies', view: 'TableView', method: 'onDrawPolicies'},
+	{ event: 'drawPolicies', view: 'PlayerListView', method: 'onDrawPolicies'},
+
+	{ event: 'discard', view: 'PlayerListView', method: 'onDiscard'},
+	{ event: 'discard', view: 'TableView', method: 'onDiscard'},
+
+	{ event: 'startChancellorLegislativeSession', view: 'TableView', method: 'onStartChancellorLegislativeSession'},
+	{ event: 'startChancellorLegislativeSession', view: 'PlayerListView', method: 'onStartChancellorLegislativeSession'},
 	
 	// if veto not proposed
-	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) != -1), view: 'LegislativeView', method: 'onEnactPolicy', priority: 1},
-	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) != -1), view: 'LegislativeView', method: 'unload', priority: 2},
+	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) != -1), view: 'PlayerListView', method: 'onEnactPolicy', priority: 1},
+	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) != -1), view: 'TableView', method: 'onEnactPolicy', priority: 1},
 	
 	// veto proposed
-	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) == -1), view: 'LegislativeView', method: 'onProposeVeto', priority: 1},
+	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) == -1), view: 'PlayerListView', method: 'onProposeVeto', priority: 1},
+	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) == -1), view: 'StatusView', method: 'onProposeVeto', priority: 1},
 	
-	{ event: 'giveVetoConsent', view: 'LegislativeView', method: 'onGiveVetoConsent', priority: 1},
-	{ event: (e) => e.eventName == 'giveVetoConsent' && e.data == "1", view: 'LegislativeView', method: 'unload', priority: 2},
+	{ event: 'giveVetoConsent', view: 'TableView', method: 'onGiveVetoConsent', priority: 1},
+
+	{ event: 'beforeExecution', view: 'TableView', method: 'onBeforeExecution'},
 
 	{ event: 'startExecution', view: 'ExecutionView', method: 'load'},
 	{ event: 'executePlayer', view: 'ExecutionView', method: 'onExecutePlayer', priority: 1},
 	{ event: 'executePlayer', view: 'ExecutionView', method: 'unload', priority: 2},
 
+	{ event: 'beforePolicyPeek', view: 'TableView', method: 'onBeforePolicyPeek'},
+
 	{ event: 'startPolicyPeek', view: 'PolicyPeekView', method: 'load'},
 	{ event: 'confirmPolicyPeek', view: 'PolicyPeekView', method: 'onConfirmPolicyPeek', priority: 1},
 	{ event: 'confirmPolicyPeek', view: 'PolicyPeekView', method: 'unload', priority: 2},
 
+	{ event: 'beforeSpecialElection', view: 'TableView', method: 'onBeforeSpecialElection'},
+
 	{ event: 'startSpecialElection', view: 'SpecialElectionView', method: 'load'},
 	{ event: 'callSpecialElection', view: 'SpecialElectionView', method: 'onCallSpecialElection', priority: 1},
 	{ event: 'callSpecialElection', view: 'SpecialElectionView', method: 'unload', priority: 2},
+
+	{ event: 'beforeInvestigation', view: 'TableView', method: 'onBeforeInvestigation'},
 
 	{ event: 'startInvestigation', view: 'InvestigationView', method: 'load'},
 	{ event: 'investigate', view: 'InvestigationView', method: 'onInvestigate', priority: 1},

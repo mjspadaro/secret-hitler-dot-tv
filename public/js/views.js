@@ -223,7 +223,7 @@ const VIEW_CLASSES = [
 		
 			this.boardLiberal = new Board(LIBERAL_VALUE);
 			this.boardLiberal.x = 450;
-			this.boardLiberal.y = 525;
+			this.boardLiberal.y = 550;
 		
 			let statusBg = new PIXI.Sprite(this.resources.statusBackground.texture);
 			statusBg.x = 375;
@@ -233,31 +233,132 @@ const VIEW_CLASSES = [
 			this.addChild(this.boardFascist);		
 			this.addChild(this.boardLiberal);
 		
+			let pileDiscardHolder = new PIXI.Sprite(this.resources.pileDiscard.texture);	
+			pileDiscardHolder.x = 1377;
+			pileDiscardHolder.y = 175;
+			this.pileDiscard = new CardPile(this.resources.policyBack.texture, 0, 2, 2);
+			this.pileDiscard.x = 22;
+			this.pileDiscard.y = 22;
+			pileDiscardHolder.addChild(this.pileDiscard);
+			this.addChild(pileDiscardHolder);
+
 			let pileDrawHolder = new PIXI.Sprite(this.resources.pileDraw.texture);	
 			pileDrawHolder.x = 1377;
-			pileDrawHolder.y = 575;
+			pileDrawHolder.y = 625;
 			this.pileDraw = new CardPile(this.resources.policyBack.texture, 0, 2, 2);
 			this.pileDraw.x = 22;
 			this.pileDraw.y = 22;
 			pileDrawHolder.addChild(this.pileDraw);
 			this.addChild(pileDrawHolder);
 		
-			let pileDiscardHolder = new PIXI.Sprite(this.resources.pileDiscard.texture);	
-			pileDiscardHolder.x = 1377;
-			pileDiscardHolder.y = 200;
-			this.pileDiscard = new CardPile(this.resources.policyBack.texture, 0, 2, 2);
-			this.pileDiscard.x = 22;
-			this.pileDiscard.y = 22;
-			pileDiscardHolder.addChild(this.pileDiscard);
-			this.addChild(pileDiscardHolder);
+			this.headlineBox = new PIXI.Sprite(this.resources.tableHeadlineBackground.texture);
+			this.headlineBox.x = 300;
+			this.headlineBox.y = 425;
+			this.headlineBox.visible = false;
+			this.headlineText = new PIXI.Text('', {
+				fontFamily: "Futura-Medium",
+				fontSize: 42,
+				fill: palette.beige,
+				wordWrap: true,
+				wordWrapWidth: 1200,
+				align: "left",
+			});
+			this.headlineText.x = 25;
+			this.headlineText.y = 25;
+			this.headlineText.visible = true;
+			this.headlineBox.addChild(this.headlineText);
+			this.addChild(this.headlineBox);
+						
+		}
+	
+		setHeadline(text = '') {
+			this.headlineText.text = "";
+			let transition = new TransitionType(this.headlineText, { text: text });
+			this.addTransition(transition);
+			return transition;
+		}
+	
+		onBeforeNomination (e) {
+			let president = e.state.players.find(p => p.isPresident);
+			this.setHeadline(`${president.name} is now President.`).then(new TransitionPause());
+			this.headlineBox.visible = true;
+		}
 		
-			/*
-			this.playerList = new PlayerList();
-			this.playerList.x = 200;
-			this.playerList.y = 175;
-			this.addChild(this.playerList);
-			*/
+		onStartNomination (e) {
+			this.headlineBox.visible = false;
+		}
+		
+		onStartPresidentLegislativeSession (e) {
+			let president = e.state.players.find(p => p.isPresident);
+			this.setHeadline(`${president.name}: Draw 3 policy cards.`);
+			this.headlineBox.visible = true;
+		}
+		
+		onDrawPolicies (e) {
+			this.headlineBox.visible = false;
+		}
+		
+		onStartChancellorLegislativeSession (e) {
+			this.headlineBox.visible = false; // in case we are returning here after veto denied
+		}
+		
+		onDiscard (e) {
+
+		}
+		
+		onProposeVeto (e) {
+			let chancellor = e.state.players.find(p => p.isChancellor);
+			let president = e.state.players.find(p => p.isPresident);
+			this.headlineBox.visible = false;
+			this.setHeadline(`${chancellor.name} has proposed to veto this agenda. ${president.name} may approve or deny the veto motion.`).then(new TransitionPause());
+		}
+		
+		onGiveVetoConsent(e) {
+			let president = e.state.players.find(p => p.isPresident);				
+			let decision = e.data == 1 ? 'approved' : 'denied';
+			this.setHeadline(`${president.name} has ${decision} the motion to veto this agenda.`);
+			this.addTransition(new TransitionPause());
+		}
+		
+		onEnactPolicy (e) {
+			let policyType = e.state.agenda[0].toUpperCase();
+
+			if (e.state.agenda[0] == 'fascist') {
+				var board = this.boardFascist;
+				var i = e.state.fascistScore - 1;
+			} else if (e.state.agenda[0] == 'liberal'){
+				var board = this.boardLiberal;
+				var i = e.state.liberalScore - 1;
+			}
 			
+			let policyBoardCard = board.policies.getChildAt(i);
+			policyBoardCard.scale.x = 0;
+			policyBoardCard.visible = true;
+			let policyBoardTransition = new TransitionScale(policyBoardCard);
+			
+			this.headlineBox.visible = true;
+			this.setHeadline(`A ${policyType} policy was passed.`).and(policyBoardTransition).then(new TransitionPause());
+		}
+		
+		onBeforePolicyPeek (e) {
+			let president = e.state.players.find(p => p.isPresident);
+			this.setHeadline(`${president.name} now has the power to peek at the next three policies.`).then(new TransitionPause());
+			
+		}
+		
+		onBeforeSpecialElection (e) {
+			let president = e.state.players.find(p => p.isPresident);
+			this.setHeadline(`${president.name} now has the power to call a special election.`).then(new TransitionPause());			
+		}
+		
+		onBeforeInvestigation (e) {
+			let president = e.state.players.find(p => p.isPresident);
+			this.setHeadline(`${president.name} now has the power to investigate another player's party loyalty.`).then(new TransitionPause());			
+		}
+		
+		onBeforeExecution (e) {
+			let president = e.state.players.find(p => p.isPresident);
+			this.setHeadline(`${president.name} now has the power to execute another player.`).then(new TransitionPause());			
 		}
 	
 		update (e) {
@@ -266,13 +367,136 @@ const VIEW_CLASSES = [
 			this.boardLiberal.update(e);
 			this.pileDiscard.cardCount = 17 - e.state.fascistScore - e.state.liberalScore - e.state.policyDeck.length - e.state.agenda.length;
 			this.pileDraw.cardCount = e.state.policyDeck.length;
-			//this.playerList.update(e);
-		
-		
 		
 			return this;
 		}
 	
+	},
+
+	class PlayerListView extends GameView {
+
+		constructor () {
+	
+			super(3);
+			this.avatars = [];
+
+		}
+		
+		load (e) {
+			super.load(e);
+			this.update(e);
+			
+		}
+
+		addPlayer (player) {
+			let avatar = new Avatar(player);
+			this.addChild(avatar);
+			this.avatars.push(avatar);
+			return avatar;
+		}
+		
+		onNominateChancellor (e) {
+			let nominee = e.state.players.find(p => p.isNominee);
+			this.avatars[nominee.order].update(nominee);
+		}
+
+		onDrawPolicies (e) {
+
+			this.agendaBox = new PIXI.Sprite(this.resources.agendaBox.texture);
+			this.agendaBox.x = 263;
+			this.agendas = new PIXI.Container();
+			this.agendas.scale.x = 0.55;
+			this.agendas.scale.y = 0.55;
+			this.agendas.y = 20;
+			this.agendas.x = 40;
+			this.agendaBox.addChild(this.agendas);
+			this.addChild(this.agendaBox);
+
+			let president = e.state.players.find(p => p.isPresident);
+
+			this.agendaBox.y = this.avatars[president.order].y;
+
+			let xOffset = 0;
+			
+			let transition = new PixiTransition();
+			
+			for (let a of e.state.agenda) {
+				let policyTexture = this.resources['policy' + a.charAt(0).toUpperCase() + a.slice(1)].texture;
+				let card = new LightboxCard(this.resources.policyBack.texture, policyTexture);
+				card.x = xOffset;
+				xOffset += 38;
+				card.scale.x = 0;
+				this.agendas.addChild(card);
+				transition.then(new TransitionScale(card));
+			}
+			transition.then(new TransitionPause());
+			this.addTransition(transition);
+		}
+		
+		onDiscard(e) {
+			let discardIndex = parseInt(e.data);
+			let discarded = this.agendas.children[discardIndex];
+			let transition = new TransitionScale(discarded, {endScaleX: 0})
+					.then(new TransitionDestroy(discarded))
+					.then(new TransitionPause());
+			this.addTransition(transition);
+		}
+		
+		onStartChancellorLegislativeSession(e) {
+			let chancellor = e.state.players.find(p => p.isChancellor);
+			this.agendaBox.visible = true; // in case we are returning here after a denied veto
+			this.agendaBox.y = this.avatars[chancellor.order].y;
+		}
+	
+		onEnactPolicy(e) {	
+			let chancellor = e.state.players.find(p => p.isChancellor);
+			// discard the one that wasn't passed
+			let discardIndex = parseInt(e.data) == 0 ? 1 : 0;
+			let passIndex = parseInt(e.data) == 0 ? 0 : 1;
+			let policyType = e.state.agenda[0].toUpperCase();
+			let discarded = this.agendas.children[discardIndex];
+			let transition = new TransitionScale(discarded, {endScaleX: 0})
+				.then(new TransitionDestroy(discarded))
+				.then(new TransitionPause())
+				.then(this.agendas.children[passIndex].flip())
+				.then(new TransitionPause())
+				.then(new TransitionDestroy(this.agendaBox));
+			this.addTransition(transition);
+		}
+		
+		onProposeVeto(e) {	
+			this.agendaBox.visible = false;
+		}
+
+		updateHighlight (e) {
+			
+		}
+
+		update (e) {
+			
+			let offsetY = 175;
+			let state = e.state;
+			let ySpacing = 575 / state.players.length;
+			for ( let i = 0 ; i < state.players.length ; i++ ) {
+				let player = state.players[i];
+				if (i >= this.avatars.length) {
+					var avatar = this.addPlayer(player);
+				} else {
+					var avatar = this.avatars[i];
+					avatar.update(player);
+				}
+				avatar.y = i * ySpacing + offsetY;
+				if (player.isChancellor || player.isPresident || player.isNominee) {
+					offsetY = offsetY + Math.max(0, 100 - ySpacing);
+				}
+				if (!player.ask.complete) {
+					avatar.x = 50;
+				} else {
+					avatar.x = 25;
+				}
+			}
+		}
+
 	},
 
 	class StatusView extends GameView {
@@ -320,8 +544,8 @@ const VIEW_CLASSES = [
 			}
 			
 			this.breadcrumbTracker = new PIXI.Sprite(this.resources.breadcrumbTracker.texture);
-			this.breadcrumbPositions = [431, 656, 881, 1106]
-			this.breadcrumbTracker.y = 56;
+			this.breadcrumbPositions = [424, 649, 874, 1099]
+			this.breadcrumbTracker.y = 49;
 			this.breadcrumbTracker.x = this.breadcrumbPositions[0];
 			this.addChild(this.breadcrumbTracker);
 
@@ -343,49 +567,47 @@ const VIEW_CLASSES = [
 				this.liberalScoreMarkers.push(marker);			
 			}
 			
-			this.playerList = new PlayerList();
-			this.playerList.x = 50;
-			this.playerList.y = 175;
-			this.playerList.update(e);
-			this.addChild(this.playerList);		
+		
 		
 		}
-	
-		updateBreadcrumb4 (e) {
-			if (e.state.nextExecutiveAction) {
-				this.breadcrumb4.text = e.state.nextExecutiveAction;
-				this.breadcrumb4.visible = true;
-			} else {
-				this.breadcrumb4.visible = false;
-			}
-		}
-	
-		update (e) {
+		
+		updateBreadcrumbs (e) {
 			
 			// update the breadcrumb tracker
 			switch (e.eventName) {
-			case 'startNomination':
+			case 'beforeNomination':
 				this.breadcrumbTracker.x = this.breadcrumbPositions[0];
+				if (e.state.nextExecutiveAction) {
+					this.breadcrumb4.text = e.state.nextExecutiveAction;
+					this.breadcrumb4.visible = true;
+				} else {
+					this.breadcrumb4.visible = false;
+				}
 				break;
-			case 'startElection':
+			case 'beforeElection':
 				this.breadcrumbTracker.x = this.breadcrumbPositions[1];
 				break;
 			case 'startPresidentLegislativeSession':
 				this.breadcrumbTracker.x = this.breadcrumbPositions[2];
 				break;
-			case 'startPolicyPeek':
+			case 'beforePolicyPeek':
 				this.breadcrumbTracker.x = this.breadcrumbPositions[3];
 				break;
-			case 'startSpecialElection':
+			case 'beforeSpecialElection':
 				this.breadcrumbTracker.x = this.breadcrumbPositions[3];
 				break;
-			case 'startInvestigation':
+			case 'beforeInvestigation':
 				this.breadcrumbTracker.x = this.breadcrumbPositions[3];
 				break;
-			case 'startExecution':
+			case 'beforeExecution':
 				this.breadcrumbTracker.x = this.breadcrumbPositions[3];
 				break;								
 			}
+			
+		}
+	
+		updateScore (e) {
+
 			
 			// update the score markers
 			for (let i = 0 ; i < 6 ; i++) {
@@ -393,10 +615,7 @@ const VIEW_CLASSES = [
 			}
 			for (let i = 0 ; i < 5 ; i++) {
 				this.liberalScoreMarkers[i].texture  = i < e.state.liberalScore ? this.resources.liberalScoreFilled.texture : this.resources.liberalScore.texture;
-			}
-			
-			this.playerList.update(e);	
-		
+			}		
 		}
 	},
 
@@ -537,69 +756,6 @@ const VIEW_CLASSES = [
 				.then(new TransitionPause());
 		}
 	
-	},
-
-	class LegislativeView extends LightboxView  {
-	
-		constructor () {
-			super();
-		
-		}
-	
-		load (e) {	
-			super.load(e);
-			this.cards.options.width = 675;
-			this.cards.x = 575;
-			let agenda = e.state.agenda;
-			let president = e.state.players.find(p => p.isPresident);
-			this.setHeadline(`${president.name}: Discard 1 policy from the agenda.`);
-			for (let a of agenda) {
-				let policyTexture = this.resources['policy' + a.charAt(0).toUpperCase() + a.slice(1)].texture;
-				let c = this.addCard(this.resources.policyBack.texture, policyTexture);
-			}
-		}
-	
-		onDiscard(e) {
-			let discardIndex = parseInt(e.data);
-			this.cards.children[discardIndex].destroy();
-			this.addTransition(new TransitionPause());
-		}
-		
-		onStartChancellorLegislativeSession(e) {	
-			let chancellor = e.state.players.find(p => p.isChancellor);
-			let headlineText = `${chancellor.name}: Choose a remaining policy to enact`;
-			headlineText += e.state.vetoAllowed ? ', or you may propose a veto to this agenda with the president\'s consent.' : '.';
-			this.setHeadline(headlineText);
-		}
-	
-		onEnactPolicy(e) {	
-			let chancellor = e.state.players.find(p => p.isChancellor);
-			// discard the one that wasn't passed
-			let discardIndex = parseInt(e.data) == 0 ? 1 : 0;
-			let passIndex = parseInt(e.data) == 0 ? 0 : 1;
-			let policyType = e.state.agenda[0].toUpperCase();
-			this.cards.children[discardIndex].visible = false;
-			let transition = new TransitionPause()
-				.then(this.cards.children[passIndex].flip())
-				.then(new TransitionType(this.headline, { text: `A ${policyType} policy was passed!` }))
-				.then(new TransitionPause());
-			
-				this.addTransition(transition);
-		}
-		
-		onProposeVeto(e) {	
-			let chancellor = e.state.players.find(p => p.isChancellor);
-			let president = e.state.players.find(p => p.isPresident);			
-			this.setHeadline(`${chancellor.name} has proposed to veto this agenda. ${president.name} may either approve or deny the motion.`);
-		}
-	
-		onGiveVetoConsent(e) {
-			let president = e.state.players.find(p => p.isPresident);				
-			let decision = e.data == 1 ? 'approved' : 'denied';
-			this.setHeadline(`${president.name} has ${decision} the motion to veto this agenda.`);
-			this.addTransition(new TransitionPause());
-		}
-		
 	},
 
 	class ExecutionView extends LightboxView  {
@@ -1088,47 +1244,7 @@ class Board extends PIXI.Sprite {
 
 }
 
-class PlayerList extends PIXI.Container {
 
-	constructor () {
-	
-		super();
-		this.avatars = [];
-	
-	}
-
-	addPlayer (player) {
-		let avatar = new Avatar(player);
-		this.addChild(avatar);
-		this.avatars.push(avatar);
-		return avatar;
-	}
-
-	update (e) {
-		let offsetY = 0;
-		let state = e.state;
-		let ySpacing = 575 / state.players.length;
-		for ( let i = 0 ; i < state.players.length ; i++ ) {
-			let player = state.players[i];
-			if (i >= this.avatars.length) {
-				var avatar = this.addPlayer(player);
-			} else {
-				var avatar = this.avatars[i];
-				avatar.update(player);
-			}
-			avatar.y = i * ySpacing + offsetY;
-			if (player.isChancellor || player.isPresident || player.isNominee) {
-				offsetY = offsetY + Math.max(0, 100 - ySpacing);
-			}
-			if (!player.ask.complete) {
-				avatar.x = 25;
-			} else {
-				avatar.x = 0;
-			}
-		}
-	}
-
-}
 
 class DistributedGridContainer extends PIXI.Container {
 	

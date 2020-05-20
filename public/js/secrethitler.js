@@ -558,19 +558,19 @@ SecretHitlerGame.prototype.getState = function () {
 	}
 	
 	switch (this.executiveActions[this.fascistScore + 1]) {	
-	case 'startNomination':
+	case 'beforeNomination':
 		state.nextExecutiveAction = '';
 		break;
-	case 'startExecution':
+	case 'beforeExecution':
 		state.nextExecutiveAction = 'EXECUTION';
 		break;
-	case 'startInvestigation':
+	case 'beforeInvestigation':
 		state.nextExecutiveAction = 'INVESTIGATION';
 		break;
-	case 'startSpecialElection':
+	case 'beforeSpecialElection':
 		state.nextExecutiveAction = 'SPECIAL ELECTION';
 		break;
-	case 'startPolicyPeek':
+	case 'beforePolicyPeek':
 		state.nextExecutiveAction = 'POLICY PEEK';
 		break;
 	default:
@@ -701,7 +701,9 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 		startNomination : function () {
 	
 			var options = [];
-
+			
+			// do not reset the agenda until now, which leaves the last passed policy visible in the game state in beforeNomination event
+			this.agenda = [];
 	
 			var eligibleNominees = this.getEligibleNominees();
 	
