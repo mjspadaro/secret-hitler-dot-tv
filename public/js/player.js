@@ -42,7 +42,7 @@ const events = {
 	
 	startGame: {
 		headline: 'You are the host.',
-		body:  '<em>Wait</em> for all players to join before starting the game.',
+		body:  '<em>Wait</em> for all players to join before starting the game.<br /><br />If you start the game with fewer than the minimum 5 players, the remaining spots will be filled with computer players.',
 		button: 'Start Game',
 	},
 	
