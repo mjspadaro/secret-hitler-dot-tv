@@ -276,7 +276,16 @@ class TransitionPause extends PixiTransition {
 	constructor (delayMS = PAUSE_DURATION) {
 		
 		super(undefined, { delay: delayMS, timeout: 300000 });
+		this.finished = false;
 		return this;
+	}
+	
+	checkComplete () {
+		return this.finished;
+	}
+	
+	animate () {
+		this.finished = true;
 	}
 	
 }
