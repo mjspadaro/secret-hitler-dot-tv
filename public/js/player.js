@@ -42,15 +42,34 @@ const events = {
 	
 	startGame: {
 		headline: 'You are the host.',
+		info: 'Starting the game...',
 		body:  '<em>Wait</em> for all players to join before starting the game.<br /><br />If you start the game with fewer than the minimum 5 players, the remaining spots will be filled with computer players.',
 		button: 'Start Game',
 	},
 	
-	confirmInvestigate: (p) => ({
-		headline: 'Investigation results:',
-		body: `${p.investigationTarget} is a member of the <em>${p.investigationResult}</em> party.`,
-		button: 'Got it!',
-	}),
+	startNomination: {
+		info: 'Checking eligible chancellor nominees...',
+	},
+	
+	nominateChancellor: {
+		info: 'Your nomination has been submitted.',
+	},
+	
+	startElection: {
+		info: 'Opening the polls...',
+	},
+	
+	vote: {
+		info: "You voted!",
+	},
+	
+	drawChaosCard: {
+		info: 'Drawing the top policy... chaos here we come!',
+	},
+	
+	drawPolicies: {
+		info: 'Drawing the next 3 policies...',
+	},
 	
 	discard: {
 		headline: "Choose a policy to <em>discard</em>.",
@@ -63,9 +82,36 @@ const events = {
 		"If the president approves your motion, the agenda will be tossed out and no policy will be passed during this legislative session.",
 		button: p.ask.options.length == 3 ? 'Submit' : 'Enact Policy',
 	}),
+
+	startExecution: {
+		info: 'Preparing for the execution...',
+	},
+	
+	executePlayer: {
+		info: 'The execution has been ordered.'
+	},
+	
+	startSpecialElection: {
+		info: 'Preparing for the special election...',
+	},
+
+	startInvestigation: {
+		info: 'Preparing for the investigation...',
+	},
+	
+	confirmInvestigate: (p) => ({
+		headline: 'Investigation results:',
+		body: `${p.investigationTarget} is a member of the <em>${p.investigationResult}</em> party.`,
+		button: 'Got it!',
+		info: 'The investigation is complete.',
+	}),
+	
+	startPolicyPeek: {
+		info: 'Getting the next 3 policies...',
+	},
 	
 	confirmPolicyPeek: (p) => ({
-		headline: "You have the power of <em>policy peek</em>. Here is a peek at the next three cards in the policy deck:",
+		headline: "Here is a peek at the next three cards in the policy deck:",
 		body: "<ol><li><em>" + p.policyPeek.join('</em></li><li><em>') + "</em></li></ol>",
 		button: "Got it!"
 	}),
@@ -135,7 +181,7 @@ function onGameOver() {
 function getEvent(eventName, playerState = player) {
 	let defaultEvent = {
 		headline: playerState.ask.question,
-		info: 'Done for now! Waiting on other players.',
+		info: 'Done for now! Waiting on other players...',
 		body: '',
 		button: playerState.ask.options.length == 1 ? playerState.ask.options[0].text : 'Submit',
 	};
@@ -184,8 +230,11 @@ function updatePlayerState(playerState) {
 			$('.player-action-option').remove();
 			
 			$('#player-info').hide();
-			
+
 			let e = getEvent(playerState.ask.playerAction, playerState);
+
+			$('#player-info').html(e.info);
+
 			let headline = $(document.createElement('h3'));
 			headline.addClass('player-action-headline');
 			headline.html(e.headline);
@@ -309,7 +358,6 @@ function afterPlay(success = true, msg = 'Error: there was a problem, please try
 		console.log('Play successful.');
 		
 		if ($('#player-action-submitted').val() == "true") {
-			$('#player-info').html('Done for now! Waiting for other players.');
 			$('#player-info').show();
 			$('#player-action').hide();
 		}
