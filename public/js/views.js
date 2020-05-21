@@ -1154,6 +1154,13 @@ class Avatar extends PIXI.Sprite {
 		this.label.y = 25;
 		this.label.x = this.width / 2;
 		this.addChild(this.label);
+		
+		this.strikethrough = new PIXI.Sprite(resources.strikethrough.texture);
+		this.strikethrough.anchor.x = 0.5;
+		this.strikethrough.y = 30;
+		this.strikethrough.x = this.width / 2;
+		this.strikethrough.visible = false;
+		this.addChild(this.strikethrough);
 	
 		this.highlight = new PIXI.Sprite(resources.playerFolderHighlight.texture);
 		this.highlight.anchor.x = 0.5;
@@ -1183,6 +1190,7 @@ class Avatar extends PIXI.Sprite {
 		this.chancellorMarker.visible = player.isChancellor || player.isNominee;
 		this.presidentMarker.visible = player.isPresident;
 		this.highlight.visible = !player.ask.complete;
+		this.strikethrough.visible = !player.isAlive;
 	}
 
 }

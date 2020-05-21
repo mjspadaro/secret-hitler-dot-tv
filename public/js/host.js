@@ -40,6 +40,7 @@ const assets = [
 	'status-foreground',
 	'agenda-box',
 	'table-headline-background',
+	'strikethrough',
 ];
 
 const loremIpsum = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna.";
