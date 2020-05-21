@@ -172,6 +172,21 @@ const ROUTE_TABLE = [
 ];
 
 const TESTS = {
+
+	beforePolicyPeek: function (control) {
+		
+		for (let p of control.game.players) {
+			p.isPresident = false;
+			p.ask.complete = true;
+		}
+		
+		// set the first human player found as president
+		control.game.players.find(p => !p.isAI).isPresident = true;
+		control.game.next = 'beforePolicyPeek';
+
+		return true;
+	},
+
 	startInvestigation: function (control) {
 		
 		for (let p of control.game.players) {
