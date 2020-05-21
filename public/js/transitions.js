@@ -151,12 +151,14 @@ class TransitionType extends PixiTransition {
 		let defaultOptions = {
 			text: '',
 			velocity: TEXT_SPEED,
+			pauseDuration: TEXT_SPEED * 1000, // how long to pause at the end
 		}
 				
 		options = Object.assign(defaultOptions, options);
 		super (displayObject, defaultOptions, callback);
 		
 		this.textLength = 0;
+		this.then(new TransitionPause(this.options.pauseDuration));
 		
 		return this;
 	}

@@ -1025,15 +1025,17 @@ class GameRenderer {
 			view[method](data);
 			
 			
-			// add a pause to the transition queue of this was a play made by an AI - keeps the game from moving forward too quickly
-			let player = data.state.players.find(p => p.id === data.playerId);
-			if (player) {
-				if (player.isAI) {
-					console.log('Renderer: Adding pause to transition for AI player.');
-					view.addTransition(new TransitionPause());
-				}
+			if (view.transitions.length > 0) {
+				// add a pause to the transition queue of this was a play made by an AI - keeps the game from moving forward too quickly
+				let player = data.state.players.find(p => p.id === data.playerId);
+				if (player) {
+					if (player.isAI) {
+						console.log('Renderer: Adding pause to transition for AI player.');
+						view.addTransition(new TransitionPause());
+					}
 			}
 			
+			}
 			if (method == 'load') {
 				view.resize(this.app.renderer.width, this.app.renderer.height);
 			}

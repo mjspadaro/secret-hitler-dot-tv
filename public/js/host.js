@@ -49,7 +49,7 @@ const LIBERAL_VALUE = 1;
 
 const GAME_SPEED = 1; // 1 = normal speed, 2 = double speed
 const TEXT_SPEED = 0.5;
-const PAUSE_DURATION = 3000;
+const PAUSE_DURATION = 2500;
 
 const palette = {
 	orange: "#e66443",
