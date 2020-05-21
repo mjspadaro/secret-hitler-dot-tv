@@ -145,9 +145,9 @@ function SecretHitlerGame(gameId = '') {
 		},
 		proposeVeto: {
 			start: 'The chancellor has proposed to veto this agenda',
-			question: 'The chancellor has propose to veto this agenda, what will you do?',
-			agree: 'Agree to the veto',
-			disagree: 'Reject the veto',
+			question: 'The chancellor has proposed to veto this agenda, what will you do?',
+			agree: 'Approve the motion to veto',
+			disagree: 'Deny the motion to veto',
 			vetoAccepted: 'This agenda has been vetoed by the President and Chancellor',
 			vetoRejected: 'The president has rejected the veto'
 		},

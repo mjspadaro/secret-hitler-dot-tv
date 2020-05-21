@@ -281,6 +281,25 @@ class TransitionPause extends PixiTransition {
 	
 }
 
+
+class TransitionHide extends PixiTransition {
+	
+	constructor (displayObject = new PIXI.DisplayObject) {
+		
+		super(displayObject);
+		return this;
+	}
+	
+	checkComplete () {
+		return !this.displayObject.visible;
+	}
+	
+	animate (time) {
+		this.displayObject.visible = false;
+	}	
+	
+}
+
 class TransitionDestroy extends PixiTransition {
 	
 	constructor (displayObject = new PIXI.DisplayObject) {

@@ -60,7 +60,7 @@ const events = {
 	enactPolicy: (p) => ({
 		headline: "Choose a policy to <em>enact</em>.",
 		body: p.ask.options.length < 3 ? "" : "Alternatively, you could propose to <em>veto</em> this agenda." +
-		"If the chancellor approves your motion, the agenda will be tossed out and no policy will be passed during this legislative session.",
+		"If the president approves your motion, the agenda will be tossed out and no policy will be passed during this legislative session.",
 		button: p.ask.options.length == 3 ? 'Submit' : 'Enact Policy',
 	}),
 	

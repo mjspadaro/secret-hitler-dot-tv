@@ -263,8 +263,9 @@ const VIEW_CLASSES = [
 				wordWrapWidth: 1200,
 				align: "left",
 			});
+			this.headlineText.anchor.y = 0.5;
 			this.headlineText.x = 25;
-			this.headlineText.y = 25;
+			this.headlineText.y = 75;
 			this.headlineText.visible = true;
 			this.headlineBox.addChild(this.headlineText);
 			this.addChild(this.headlineBox);
@@ -280,7 +281,7 @@ const VIEW_CLASSES = [
 	
 		onBeforeNomination (e) {
 			let president = e.state.players.find(p => p.isPresident);
-			this.setHeadline(`${president.name} is now President.`).then(new TransitionPause());
+			this.setHeadline(`${president.name} is now President.`);
 			this.headlineBox.visible = true;
 		}
 		
@@ -309,15 +310,16 @@ const VIEW_CLASSES = [
 		onProposeVeto (e) {
 			let chancellor = e.state.players.find(p => p.isChancellor);
 			let president = e.state.players.find(p => p.isPresident);
-			this.headlineBox.visible = false;
-			this.setHeadline(`${chancellor.name} has proposed to veto this agenda. ${president.name} may approve or deny the veto motion.`).then(new TransitionPause());
+			this.setHeadline(`${chancellor.name} has proposed to veto this agenda. ${president.name} may approve or deny the veto motion.`);
+			this.headlineBox.visible = true;
 		}
 		
 		onGiveVetoConsent(e) {
 			let president = e.state.players.find(p => p.isPresident);				
 			let decision = e.data == 1 ? 'approved' : 'denied';
-			this.setHeadline(`${president.name} has ${decision} the motion to veto this agenda.`);
-			this.addTransition(new TransitionPause());
+			this.setHeadline(`${president.name} has ${decision} the motion to veto this agenda.`)
+				.then(new TransitionPause())
+				.then(new TransitionHide(this.headlineBox));
 		}
 		
 		onEnactPolicy (e) {
@@ -342,23 +344,23 @@ const VIEW_CLASSES = [
 		
 		onBeforePolicyPeek (e) {
 			let president = e.state.players.find(p => p.isPresident);
-			this.setHeadline(`${president.name} now has the power to peek at the next three policies.`).then(new TransitionPause());
+			this.setHeadline(`${president.name} now has the power to peek at the next three policies.`);
 			
 		}
 		
 		onBeforeSpecialElection (e) {
 			let president = e.state.players.find(p => p.isPresident);
-			this.setHeadline(`${president.name} now has the power to call a special election.`).then(new TransitionPause());			
+			this.setHeadline(`${president.name} now has the power to call a special election.`);			
 		}
 		
 		onBeforeInvestigation (e) {
 			let president = e.state.players.find(p => p.isPresident);
-			this.setHeadline(`${president.name} now has the power to investigate another player's party loyalty.`).then(new TransitionPause());			
+			this.setHeadline(`${president.name} now has the power to investigate another player's party loyalty.`);			
 		}
 		
 		onBeforeExecution (e) {
 			let president = e.state.players.find(p => p.isPresident);
-			this.setHeadline(`${president.name} now has the power to execute another player.`).then(new TransitionPause());			
+			this.setHeadline(`${president.name} now has the power to execute another player.`);			
 		}
 	
 		update (e) {
@@ -407,8 +409,8 @@ const VIEW_CLASSES = [
 			this.agendas = new PIXI.Container();
 			this.agendas.scale.x = 0.55;
 			this.agendas.scale.y = 0.55;
-			this.agendas.y = 20;
-			this.agendas.x = 40;
+			this.agendas.y = 18;
+			this.agendas.x = 36;
 			this.agendaBox.addChild(this.agendas);
 			this.addChild(this.agendaBox);
 
@@ -429,7 +431,6 @@ const VIEW_CLASSES = [
 				this.agendas.addChild(card);
 				transition.then(new TransitionScale(card));
 			}
-			transition.then(new TransitionPause());
 			this.addTransition(transition);
 		}
 		
@@ -437,14 +438,12 @@ const VIEW_CLASSES = [
 			let discardIndex = parseInt(e.data);
 			let discarded = this.agendas.children[discardIndex];
 			let transition = new TransitionScale(discarded, {endScaleX: 0})
-					.then(new TransitionDestroy(discarded))
-					.then(new TransitionPause());
+				.then(new TransitionDestroy(discarded));
 			this.addTransition(transition);
 		}
 		
 		onStartChancellorLegislativeSession(e) {
 			let chancellor = e.state.players.find(p => p.isChancellor);
-			this.agendaBox.visible = true; // in case we are returning here after a denied veto
 			this.agendaBox.y = this.avatars[chancellor.order].y;
 		}
 	
@@ -466,6 +465,17 @@ const VIEW_CLASSES = [
 		
 		onProposeVeto(e) {	
 			this.agendaBox.visible = false;
+		}
+		
+		onGiveVetoConsent(e) {
+			let president = e.state.players.find(p => p.isPresident);				
+			if (e.data == 1) {
+				// approved
+				this.agendaBox.destroy();
+			} else {
+				// denied
+				this.agendaBox.visible = true;				
+			}
 		}
 
 		updateHighlight (e) {

@@ -138,9 +138,10 @@ const ROUTE_TABLE = [
 	
 	// veto proposed
 	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) == -1), view: 'PlayerListView', method: 'onProposeVeto', priority: 1},
-	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) == -1), view: 'StatusView', method: 'onProposeVeto', priority: 1},
+	{ event: (e) => (e.eventName == 'enactPolicy' && parseInt(e.data) == -1), view: 'TableView', method: 'onProposeVeto', priority: 1},
 	
 	{ event: 'giveVetoConsent', view: 'TableView', method: 'onGiveVetoConsent', priority: 1},
+	{ event: 'giveVetoConsent', view: 'PlayerListView', method: 'onGiveVetoConsent', priority: 2},
 
 	{ event: 'beforeExecution', view: 'TableView', method: 'onBeforeExecution'},
 
@@ -191,16 +192,14 @@ const TESTS = {
 		for (let p of control.game.players) {
 			p.isPresident = false;
 			p.isNominee = false;
+			p.isChancellor = false;
 			p.ask.complete = true;
 		}
 		
+		// set human to president and chancellor
 		let human = control.game.players.find(p => !p.isAI);
 		human.isChancellor = true;
-		
-		// set another president if the human is chancellor
-		if (human.isPresident || !control.game.getPresident()) {
-			control.game.players.find(p => !p.isPresident).isPresident = true;
-		}
+		human.isPresident = true;
 		
 		control.game.fascistScore = 5;
 		control.game.next = 'startPresidentLegislativeSession';
