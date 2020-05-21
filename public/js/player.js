@@ -64,6 +64,11 @@ const events = {
 		button: p.ask.options.length == 3 ? 'Submit' : 'Enact Policy',
 	}),
 	
+	confirmPolicyPeek: (p) => ({
+		headline: "You have the power of <em>policy peek</em>. Here is a peek at the next three cards in the policy deck:",
+		body: "<ol><li><em>" + p.policyPeek.join('</em></li><li><em>') + "</em></li></ol>",
+		button: "Got it!"
+	}),
 	
 }
 
