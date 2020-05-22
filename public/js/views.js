@@ -1028,7 +1028,9 @@ class GameRenderer {
 			view[method](data);
 			
 			
-			if (view.transitions.length > 0) {
+			// the code below was added to improve AI timing but suspect it may be causing an error in some instances
+			// commenting out until this can be tested more thoroughly- possible bug reported running on Chrome/Mac
+			/*if (view.transitions.length > 0) {
 				// add a pause to the transition queue of this was a play made by an AI - keeps the game from moving forward too quickly
 				let player = data.state.players.find(p => p.id === data.playerId);
 				if (player) {
@@ -1036,9 +1038,9 @@ class GameRenderer {
 						console.log('Renderer: Adding pause to transition for AI player.');
 						view.addTransition(new TransitionPause());
 					}
-			}
+				}
+			} */
 			
-			}
 			if (method == 'load') {
 				view.resize(this.app.renderer.width, this.app.renderer.height);
 			}
