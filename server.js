@@ -33,7 +33,7 @@ class Game {
 
 		this.properties = ['code', 'state', 'created', 'updated', 'hostId'];		
 		this.code = code;
-		this.state = {players: []};
+		this.state = {version: 0, players: []};
 		this.created = false;
 		this.updated = false;
 		this.hostId = false;
@@ -89,7 +89,12 @@ class Game {
 	
 	async update() {
 		this.updated = new Date();
-		await datastore.update(this.entity).catch((err) => console.log(`ERROR: Game.update ${this.code} ${err}`));
+		const transaction = datastore.transaction();
+		await transaction.run();		
+		// uncomment the line below to delay database writes by up to 50 milliseconds to simulate production - only for TESTING!!
+		// await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 50)));
+		transaction.save(this.entity);
+		return transaction.commit().catch((err) => console.log(`ERROR: Game.update ${this.code} ${err}`));
 	}
 	
 	async destroy() {
@@ -231,11 +236,12 @@ class Client {
 			console.log(`${this.name}: gameState Error: client is not a host.`);
 			callback(false, "You are not recognized as the host of any current games");
 		} else {
-			console.log(`${this.name}: gameState`);
+			console.log(`${this.name}: gameState version=${gameState.version}`);
 			// update the game state
 			game.state = gameState;
 			game.update()
 			.then( function () {
+				console.log(`${game.code}: gameState saved to database: version=${gameState.version}`);
 				for (let p of gameState.players.filter((p) => !p.isAI)) {
 					let player = new Client(p.id);
 					player.read()
@@ -243,7 +249,7 @@ class Client {
 						if (readResult) {
 							if (player.gameCode == game.code) {
 								// make sure this player hasn't left the game
-								player.sendState();										
+								player.sendState(p);										
 							} else {
 								return Promise.reject(`Player is not in this game.`)
 							}
