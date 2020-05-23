@@ -9,6 +9,9 @@ const LISTEN_PORT = process.env.PORT ? process.env.PORT : 3000;
 const {Datastore} = require('@google-cloud/datastore');
 const datastore = new Datastore();
 
+// set writeDelayMS to zero for production! this is just to simulate database latency for debugging
+const writeDelay = 0;
+
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/public/player.html');
 });
@@ -90,11 +93,13 @@ class Game {
 	async update() {
 		this.updated = new Date();
 		const transaction = datastore.transaction();
-		await transaction.run();		
-		// uncomment the line below to delay database writes randomly to simulate production - only for TESTING!!
-		// await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 500)));
-		transaction.save(this.entity);
-		return transaction.commit().catch((err) => console.log(`ERROR: Game.update ${this.code} ${err}`));
+		return transaction.run((err) => {
+			// uncomment the line below to delay database writes randomly to simulate production - only for TESTING!!
+			setTimeout( function () {
+				transaction.save(this.entity);
+				transaction.commit().catch((err) => `ERROR on Game.update: ${err}`);
+			}.bind(this), Math.floor(Math.random() * writeDelay));	
+		});		
 	}
 	
 	async destroy() {
@@ -233,32 +238,31 @@ class Client {
 			callback(false, "You are not recognized as the host of any current games");
 		} else {
 			console.log(`${this.name}: gameState version=${gameState.version}`);
-			// update the game state
 			game.state = gameState;
+			// update each of the players
+			for (let p of gameState.players.filter((p) => !p.isAI)) {
+				let player = new Client(p.id);
+				player.read()
+				.then( function (readResult) {
+					if (readResult) {
+						// make sure this player hasn't left the game
+						if (player.gameCode == game.code) {
+							player.state = Object.assign({}, p);
+							player.sendState();										
+						} else {
+							return Promise.reject(`Player is not in this game.`)
+						}
+					} else {
+						// player not found
+						return Promise.reject(`No client found with id ${p.id}`);
+					}
+				})
+				.catch((err) => console.log(`Error sending game state to player ${player.game.code}:${player.name}: ${err}`));
+			}
+			// update the game state in the database
 			game.update()
 			.then( function () {
 				console.log(`${game.code}: gameState saved to database: version=${gameState.version}`);
-				for (let p of gameState.players.filter((p) => !p.isAI)) {
-					let player = new Client(p.id);
-					player.read()
-					.then( function (readResult) {
-						if (readResult) {
-							if (player.gameCode == game.code) {
-								// make sure this player hasn't left the game
-								player.state = Object.assign({}, p);
-								player.sendState();										
-							} else {
-								return Promise.reject(`Player is not in this game.`)
-							}
-						} else {
-							// player not found
-							return Promise.reject(`No client found with id ${p.id}`);
-						}
-					})
-					.catch((err) => console.log(`Error sending game state to player ${player.game.code}:${player.name}: ${err}`));
-				}				
-			})
-			.then( function () {
 				callback(true);
 			}).catch((err) => console.log(`Error updating game state: ${err}`));
 		}
