@@ -300,6 +300,7 @@ class Client {
 							client.game = game;
 							client.gameCode = gameCode;
 							client.name = playerName;
+							client.state = gameState.players.find((p) => p.id == client.id);
 							callback(client.state);
 							client.update()
 							.then( game.update() );
@@ -357,6 +358,7 @@ class Client {
 			if (this.gameCode) {
 				this.game.code = this.gameCode;
 				await this.game.read();
+				this.state = this.game.state.players.find(p => p.id == this.id);
 			}
 			return true;
 		} else {

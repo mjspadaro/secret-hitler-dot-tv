@@ -330,10 +330,12 @@ function afterJoinGame(playerState, err = 'Error: unable to join.') {
 	enableForms();
 	if (playerState) {
 		// only show this if the game hasn't started
-		if (!player.gameStarted) {
+		if (!playerState.gameStarted) {
 			setInfo("You're in! Waiting for more players to join...");
-			$('#player-info').show();
+		} else {
+			setInfo("Welcome back!");
 		}
+		$('#player-info').show();
 		$('#join-game').hide();
 		$('#error').hide();
 		updatePlayerState(playerState);
