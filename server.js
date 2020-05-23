@@ -91,8 +91,8 @@ class Game {
 		this.updated = new Date();
 		const transaction = datastore.transaction();
 		await transaction.run();		
-		// uncomment the line below to delay database writes by up to 50 milliseconds to simulate production - only for TESTING!!
-		// await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 50)));
+		// uncomment the line below to delay database writes randomly to simulate production - only for TESTING!!
+		// await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 500)));
 		transaction.save(this.entity);
 		return transaction.commit().catch((err) => console.log(`ERROR: Game.update ${this.code} ${err}`));
 	}
@@ -160,16 +160,12 @@ class Client {
 			// request the latest state if this is the host
 			// send the latest state if this is a player
 			if (client.isHost) {
-				console.log(`Requesting updated game state for ${client.game.code} from ${client.naem}`);
+				console.log(`Requesting updated game state for ${client.game.code} from ${client.name}`);
 				client.socket.emit('sendState');
 			} else if (client.state) {
 				client.sendState();
 			}
 		}).catch(function (err) { console.log(`Error initializaing client: ${err}`) });		
-	}
-	
-	get state() {
-		return this.game.state.players.find(p => p.id == this.id);
 	}
 	
 	get socket() {
@@ -249,7 +245,8 @@ class Client {
 						if (readResult) {
 							if (player.gameCode == game.code) {
 								// make sure this player hasn't left the game
-								player.sendState(p);										
+								player.state = Object.assign({}, p);
+								player.sendState();										
 							} else {
 								return Promise.reject(`Player is not in this game.`)
 							}
