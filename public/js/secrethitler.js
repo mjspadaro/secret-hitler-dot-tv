@@ -596,6 +596,9 @@ SecretHitlerGame.prototype.getState = function () {
 		state.turnOrderDeck.push(c);
 	}
 	
+	// adds a unique ID to each version of the game state
+	state.version = this.history.length;
+	
 	for (let player of this.players) {
 		var playerState = {};
 		for (let prop of this.playerStateProperties)
@@ -610,6 +613,8 @@ SecretHitlerGame.prototype.getState = function () {
 		playerState.hitlerName = player.role == this.t.role.fascist ? hitlerName : '';
 		playerState.gameStarted = this.started;
 		playerState.gameOver = this.winner ? true : false;
+		// see state.version above
+		playerState.version = state.version;
 		state.players.push(playerState); 
 	}
 	

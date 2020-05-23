@@ -202,6 +202,7 @@ function getEvent(eventName, playerState = player) {
 
 function updatePlayerState(playerState) {
 
+		console.log(`Updating player state: version=${playerState.version}`);
 		console.log(playerState);
 		player = playerState;
 

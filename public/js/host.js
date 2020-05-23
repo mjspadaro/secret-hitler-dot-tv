@@ -172,6 +172,10 @@ const ROUTE_TABLE = [
 
 ];
 
+const game = new SecretHitlerGame();
+const renderer = new GameRenderer();
+const controller = new GameController(game, renderer);
+
 const TESTS = {
 
 	beforePolicyPeek: function (control) {
@@ -292,13 +296,20 @@ const TESTS = {
 		grid.arrange().start();
 
 		return false;
+	},
+	
+	gameState: function (control) {
+		// quickly push 10 game state messages, incrementing the version each time by pushing onto the history
+		// this would simulate issue #13 where game states are written to the database out of sequence
+		for (let i = 0 ; i < 10 ; i++ ) {
+			game.history.push(game.getState());
+			control.sendState();
+		}
 	}
 	
 }
 
-const game = new SecretHitlerGame();
-const renderer = new GameRenderer();
-const controller = new GameController(game, renderer);
+
 
 function init() {
 	
