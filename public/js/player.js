@@ -4,7 +4,7 @@ var socket = io();
 socket.on('hello', onHello);
 socket.on('disconnect', function (socket) { setError('Error: unable to connect to server.'); disableForms(); });	
 
-var player = {name: localStorage.getItem('playerName'), id: localStorage.getItem('playerId'), gameStarted: false};
+var player = {name: localStorage.getItem('playerName'), id: localStorage.getItem('playerId'), gameStarted: false, version: -1};
 var gameId = localStorage.getItem('gameId');
 
 const events = {
@@ -203,88 +203,96 @@ function getEvent(eventName, playerState = player) {
 function updatePlayerState(playerState) {
 
 		console.log(playerState);
-		player = playerState;
-
-		$('#join-game').hide();		
 		
-		if (!player.gameOver) {
-			localStorage.setItem('playerId', playerState.id);
-			localStorage.setItem('gameId', gameId);
-			localStorage.setItem('playerName', playerState.name);		
+		// make sure we're not receiving an older play state than the one we currently have- in theory this should never happen,
+		// but in practice we have received them from the server out of sequence
+		
+		if (playerState.version < player.version) {
+			console.warn(`Received out of sequence player state: version=${playerState.version}`);
 		} else {
-			onGameOver(playerState);
-		}	
+			player = playerState;
+
+			$('#join-game').hide();		
 		
-		document.title = `Secret Hitler dot TV - ${escapeHtml(playerState.name)} - ${gameId}`;
+			if (!player.gameOver) {
+				localStorage.setItem('playerId', playerState.id);
+				localStorage.setItem('gameId', gameId);
+				localStorage.setItem('playerName', playerState.name);		
+			} else {
+				onGameOver(playerState);
+			}	
 		
-		if (playerState.ask.complete) {
-			$('#player-action').hide();
-			$('#player-action-submitted').val("true");
-		} // only render the question box if the last form has been submitted
-		else if ($('#player-action-submitted').val() == "true") {
+			document.title = `Secret Hitler dot TV - ${escapeHtml(playerState.name)} - ${gameId}`;
+		
+			if (playerState.ask.complete) {
+				$('#player-action').hide();
+				$('#player-action-submitted').val("true");
+			} // only render the question box if the last form has been submitted
+			else if ($('#player-action-submitted').val() == "true") {
 			
-			enableForms();
+				enableForms();
 			
-			// reset the form- set submitted to false and remove option list
-			$('#player-action-submitted').val("false");
-			$('.player-action-option').remove();
+				// reset the form- set submitted to false and remove option list
+				$('#player-action-submitted').val("false");
+				$('.player-action-option').remove();
 			
-			$('#player-info').hide();
+				$('#player-info').hide();
 
-			let e = getEvent(playerState.ask.playerAction, playerState);
+				let e = getEvent(playerState.ask.playerAction, playerState);
 
-			$('#player-info').html(e.info);
+				$('#player-info').html(e.info);
 
-			let headline = $(document.createElement('h3'));
-			headline.addClass('player-action-headline');
-			headline.html(e.headline);
+				let headline = $(document.createElement('h3'));
+				headline.addClass('player-action-headline');
+				headline.html(e.headline);
 			
 			
-			let body = $(document.createElement('div'));
-			body.addClass('player-action-body');
-			body.html(e.body);
+				let body = $(document.createElement('div'));
+				body.addClass('player-action-body');
+				body.html(e.body);
 
-			if (e.body.length < 1) {
-				body.hide();
-			}
+				if (e.body.length < 1) {
+					body.hide();
+				}
 						
-			let radios = [];
+				let radios = [];
 			
-			for (let i = 0 ; i < playerState.ask.options.length ; i++) {
-				let o = playerState.ask.options[i];
-				let r = $(document.createElement('div'));
-				r.addClass("player-action-option");
-				r.html(
-					`<input type="radio" id="player-action-option-${i}" name="player-action-option" value="${o.value}" />
-						<label for="player-action-option-${i}">${escapeHtml(o.text)}</label>`);
-			 	radios.push(r);
-			}
+				for (let i = 0 ; i < playerState.ask.options.length ; i++) {
+					let o = playerState.ask.options[i];
+					let r = $(document.createElement('div'));
+					r.addClass("player-action-option");
+					r.html(
+						`<input type="radio" id="player-action-option-${i}" name="player-action-option" value="${o.value}" />
+							<label for="player-action-option-${i}">${escapeHtml(o.text)}</label>`);
+				 	radios.push(r);
+				}
 			
-			// if there's only a single option, we don't need to show it
-			if (radios.length == 1) {
-				radios[0].children('input').prop("checked", "true");
-				radios[0].hide();
-			}
+				// if there's only a single option, we don't need to show it
+				if (radios.length == 1) {
+					radios[0].children('input').prop("checked", "true");
+					radios[0].hide();
+				}
 			
-			let action = $(document.createElement('input'))
-				.attr("type", "hidden")
-				.attr("id", "player-action-name")
-				.val(playerState.ask.playerAction);
+				let action = $(document.createElement('input'))
+					.attr("type", "hidden")
+					.attr("id", "player-action-name")
+					.val(playerState.ask.playerAction);
 			
-			let button = $(document.createElement('div'));
-			button.append($(document.createElement('button')).html(e.button));
-			button.addClass('player-action-submit');
+				let button = $(document.createElement('div'));
+				button.append($(document.createElement('button')).html(e.button));
+				button.addClass('player-action-submit');
 
-			// build the form html
-			$('#player-action>h3').replaceWith(headline);
-			$('.player-action-body').replaceWith(body);
-			for (r of radios) {
-				$('.player-action-submit').before(r);
-			}
-			$('#player-action-name').replaceWith(action);			
-			$('.player-action-submit').replaceWith(button);
+				// build the form html
+				$('#player-action>h3').replaceWith(headline);
+				$('.player-action-body').replaceWith(body);
+				for (r of radios) {
+					$('.player-action-submit').before(r);
+				}
+				$('#player-action-name').replaceWith(action);			
+				$('.player-action-submit').replaceWith(button);
 			
-			$('#player-action').show();
+				$('#player-action').show();
+			}
 		}
 }
 
@@ -322,10 +330,12 @@ function afterJoinGame(playerState, err = 'Error: unable to join.') {
 	enableForms();
 	if (playerState) {
 		// only show this if the game hasn't started
-		if (!player.gameStarted) {
+		if (!playerState.gameStarted) {
 			setInfo("You're in! Waiting for more players to join...");
-			$('#player-info').show();
+		} else {
+			setInfo("Welcome back!");
 		}
+		$('#player-info').show();
 		$('#join-game').hide();
 		$('#error').hide();
 		updatePlayerState(playerState);

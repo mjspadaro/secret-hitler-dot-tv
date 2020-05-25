@@ -9,6 +9,9 @@ const LISTEN_PORT = process.env.PORT ? process.env.PORT : 3000;
 const {Datastore} = require('@google-cloud/datastore');
 const datastore = new Datastore();
 
+// set writeDelayMS to zero for production! this is just to simulate database latency for debugging
+const writeDelay = 0;
+
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/public/player.html');
 });
@@ -33,7 +36,7 @@ class Game {
 
 		this.properties = ['code', 'state', 'created', 'updated', 'hostId'];		
 		this.code = code;
-		this.state = {players: []};
+		this.state = {version: 0, players: []};
 		this.created = false;
 		this.updated = false;
 		this.hostId = false;
@@ -89,7 +92,14 @@ class Game {
 	
 	async update() {
 		this.updated = new Date();
-		await datastore.update(this.entity).catch((err) => console.log(`ERROR: Game.update ${this.code} ${err}`));
+		const transaction = datastore.transaction();
+		return transaction.run((err) => {
+			// uncomment the line below to delay database writes randomly to simulate production - only for TESTING!!
+			setTimeout( function () {
+				transaction.save(this.entity);
+				transaction.commit().catch((err) => `ERROR on Game.update: ${err}`);
+			}.bind(this), Math.floor(Math.random() * writeDelay));	
+		});		
 	}
 	
 	async destroy() {
@@ -155,16 +165,12 @@ class Client {
 			// request the latest state if this is the host
 			// send the latest state if this is a player
 			if (client.isHost) {
-				console.log(`Requesting updated game state for ${client.game.code} from ${client.naem}`);
+				console.log(`Requesting updated game state for ${client.game.code} from ${client.name}`);
 				client.socket.emit('sendState');
 			} else if (client.state) {
 				client.sendState();
 			}
 		}).catch(function (err) { console.log(`Error initializaing client: ${err}`) });		
-	}
-	
-	get state() {
-		return this.game.state.players.find(p => p.id == this.id);
 	}
 	
 	get socket() {
@@ -231,31 +237,32 @@ class Client {
 			console.log(`${this.name}: gameState Error: client is not a host.`);
 			callback(false, "You are not recognized as the host of any current games");
 		} else {
-			console.log(`${this.name}: gameState`);
-			// update the game state
+			console.log(`${this.name}: gameState version=${gameState.version}`);
 			game.state = gameState;
+			// update each of the players
+			for (let p of gameState.players.filter((p) => !p.isAI)) {
+				let player = new Client(p.id);
+				player.read()
+				.then( function (readResult) {
+					if (readResult) {
+						// make sure this player hasn't left the game
+						if (player.gameCode == game.code) {
+							player.state = Object.assign({}, p);
+							player.sendState();										
+						} else {
+							return Promise.reject(`Player is not in this game.`)
+						}
+					} else {
+						// player not found
+						return Promise.reject(`No client found with id ${p.id}`);
+					}
+				})
+				.catch((err) => console.log(`Error sending game state to player ${player.game.code}:${player.name}: ${err}`));
+			}
+			// update the game state in the database
 			game.update()
 			.then( function () {
-				for (let p of gameState.players.filter((p) => !p.isAI)) {
-					let player = new Client(p.id);
-					player.read()
-					.then( function (readResult) {
-						if (readResult) {
-							if (player.gameCode == game.code) {
-								// make sure this player hasn't left the game
-								player.sendState();										
-							} else {
-								return Promise.reject(`Player is not in this game.`)
-							}
-						} else {
-							// player not found
-							return Promise.reject(`No client found with id ${p.id}`);
-						}
-					})
-					.catch((err) => console.log(`Error sending game state to player ${player.game.code}:${player.name}: ${err}`));
-				}				
-			})
-			.then( function () {
+				console.log(`${game.code}: gameState saved to database: version=${gameState.version}`);
 				callback(true);
 			}).catch((err) => console.log(`Error updating game state: ${err}`));
 		}
@@ -293,6 +300,7 @@ class Client {
 							client.game = game;
 							client.gameCode = gameCode;
 							client.name = playerName;
+							client.state = gameState.players.find((p) => p.id == client.id);
 							callback(client.state);
 							client.update()
 							.then( game.update() );
@@ -350,6 +358,7 @@ class Client {
 			if (this.gameCode) {
 				this.game.code = this.gameCode;
 				await this.game.read();
+				this.state = this.game.state.players.find(p => p.id == this.id);
 			}
 			return true;
 		} else {

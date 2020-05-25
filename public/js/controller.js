@@ -48,7 +48,7 @@ class GameController {
 	
 	// updates game state on the server, which in turn updates players
 	sendState (state = this.game.getState()) {
-		console.log('Host: gameState');
+		console.log(`Host: gameState version=${state.version}`);
 		this.socket.emit('gameState', state, function (success, msg = '') {
 			if (!success) {
 				this.onError("Error: Unable to update game state on server. " + msg);
