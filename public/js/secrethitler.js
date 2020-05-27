@@ -206,7 +206,7 @@ SecretHitlerGame.prototype.start = function () {
 		
 		for (let i = ++numPlayers ; i <= this.minPlayers ; i++) {
 			let botName = this.botNames.draw(1);
-			this.addPlayer(botName, botName).isAI = true;
+			this.addPlayer(botName, botName, true);
 		}
 		
 	
@@ -417,23 +417,19 @@ SecretHitlerGame.prototype.getPlayer = function (id) {
 }
 
 // add players to the game, returns the player object
-SecretHitlerGame.prototype.addPlayer = function(playerName = '', id) {
-	
-	if (this.players.length < 10 && !this.started) {
-		var player = new SecretHitlerPlayer(playerName, id);
-		var playerNumber = this.players.push(player);
-		if (playerName.length < 1) { player.name = `Player${playerNumber}`; }
-		player.order = playerNumber;
-		if (playerNumber == 1) {
-			player.input("Are you ready to start the game?", [{text: "Ready", value: 1}], 'startGame');
-		}
-	} else {
-		// game is full or already started
-		var player = false;
+SecretHitlerGame.prototype.addPlayer = function(playerName = '', id, isAI = false) {
+	if (this.players.length >= 10 || this.started) return false;
+	var player = new SecretHitlerPlayer(playerName, id);
+	player.isAI = isAI;
+	var playerNumber = this.players.push(player);
+	if (playerName.length < 1) { player.name = `Player${playerNumber}`; }
+	player.order = playerNumber;
+	if (playerNumber == 1) {
+		player.input("Are you ready to start the game?", [{text: "Ready", value: 1}], 'startGame');
 	}
-	
-	return player;
-
+	let joinGameEvent = { eventName: 'joinGame', playerId: id, playerName: playerName, data: player, state: this.getState() }
+	this.history.push(joinGameEvent);
+	return joinGameEvent;
 }
 
 // returns the player object of the current president

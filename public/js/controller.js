@@ -67,14 +67,13 @@ class GameController {
 	
 	// passes the add player request to the game model
 	addPlayer (playerId, playerName, callback) {
-		let player = this.game.addPlayer(playerName, playerId);
-		if (player) {
-			callback(this.game.getState());
-			this.loop({ eventName: 'joinGame', playerId: player.id, playerName: player.name, state: this.game.getState() });
+		let joinGameEvent = this.game.addPlayer(playerName, playerId);
+		if (joinGameEvent) {
+			callback(joinGameEvent.data);
 		} else {
 			callback(false, 'Unable to add player- game has already started or game is full.');
 		}
-		return player;
+		this.loop(joinGameEvent);
 	}
 	
 	// sets up a Route object based on the event (e) and the route table 

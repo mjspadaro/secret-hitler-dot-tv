@@ -294,16 +294,14 @@ class Client {
 			.then( function () {
 				console.log(`Notifying host ${host.id} that client id ${client.id} is joining.`);
 				if (host.connected) {
-					host.socket.emit('joinGame', client.id, playerName, function (gameState, err = '') {
-						if (gameState) {
-							game.state = gameState;
+					host.socket.emit('joinGame', client.id, playerName, function (playerState, err = '') {
+						if (playerState) {
 							client.game = game;
 							client.gameCode = gameCode;
 							client.name = playerName;
-							client.state = gameState.players.find((p) => p.id == client.id);
+							client.state = playerState;
 							callback(client.state);
-							client.update()
-							.then( game.update() );
+							client.update();
 						} else {
 							callback(false, err);
 						}
