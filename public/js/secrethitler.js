@@ -345,7 +345,7 @@ SecretHitlerGame.prototype.initRules = function () {
 			this.hitlerKnowsFascists = false;
 			this.executiveActions = [
 				'beforeNomination', // fascist score = 0
-				'beforeNomination',  // 1
+				'beforeInvestigation',  // 1
 				'beforeInvestigation',  // 2
 				'beforeSpecialElection',  // 3
 				'beforeExecution',  // 4
