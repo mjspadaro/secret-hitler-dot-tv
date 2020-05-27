@@ -14,12 +14,14 @@
   "url": "https://github.com/mjspadaro/secret-hitler-dot-tv.git"
  },
  "devDependencies": {
-  "node-sass": "^4.14.1",
-  "console.table": "^0.10.0"
+  "console.table": "^0.10.0",
+  "node-sass": "^4.14.1"
  },
  "scripts": {
   "build-css": "node-sass public/css/player.scss public/css/player.css",
-  "start": "node server.js"
+  "start": "node server.js",
+  "dbstart": "gcloud beta emulators datastore start",
+  "devstart": "export DATASTORE_DATASET=secrethitlerdottv && export DATASTORE_EMULATOR_HOST=localhost:8081 && export DATASTORE_EMULATOR_HOST_PATH=localhost:8081/datastore && export DATASTORE_HOST=http://localhost:8081 && export DATASTORE_PROJECT_ID=secrethitlerdottv && node-sass public/css/player.scss public/css/player.css && node --inspect server.js"
  },
  "engines": {
   "node": "12.x"
