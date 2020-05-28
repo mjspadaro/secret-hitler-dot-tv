@@ -22,7 +22,7 @@
   "start": "node server.js",
   "dbstart": "gcloud beta emulators datastore start",
   "devstart": "export DATASTORE_DATASET=secrethitlerdottv && export DATASTORE_EMULATOR_HOST=localhost:8081 && export DATASTORE_EMULATOR_HOST_PATH=localhost:8081/datastore && export DATASTORE_HOST=http://localhost:8081 && export DATASTORE_PROJECT_ID=secrethitlerdottv && node-sass public/css/player.scss public/css/player.css && node --inspect server.js",
-  "postversion": "gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | tr -d '[[:space:]]')"
+  "postversion": "gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')"
  },
  "engines": {
   "node": "12.x"
