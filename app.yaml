@@ -10,3 +10,8 @@ network:
   session_affinity: true
 # [END appengine_websockets_yaml]
 
+# redirect clients to https
+handlers:
+- url: /.*
+  secure: always
+  redirect_http_response_code: 301
