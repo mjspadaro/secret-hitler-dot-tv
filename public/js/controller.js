@@ -149,14 +149,14 @@ class GameController {
 		let msg = '';
 		let e = this.game.play(playerId, playerAction, value);
 
-		success = e.eventName != 'error';
-		callback(success, e.data);
-		
 		if (e) {
-			 // route event to the proper views
-			this.loop(e);
+			callback(e.state.players.find(p => p.id === playerId));
+		} else {
+			callback(false);
 		}
 
+		this.loop(e);
+		
 		return true;
 	}
 	

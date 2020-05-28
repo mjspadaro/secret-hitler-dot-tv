@@ -427,7 +427,7 @@ SecretHitlerGame.prototype.addPlayer = function(playerName = '', id, isAI = fals
 	if (playerNumber == 1) {
 		player.input("Are you ready to start the game?", [{text: "Ready", value: 1}], 'startGame');
 	}
-	let joinGameEvent = { eventName: 'joinGame', playerId: id, playerName: playerName, data: player, state: this.getState() }
+	let joinGameEvent = { eventName: 'joinGame', playerId: id, playerName: playerName, data: this.getState().players.find(p => p.id == id), state: this.getState() }
 	this.history.push(joinGameEvent);
 	return joinGameEvent;
 }
