@@ -41,6 +41,16 @@ Then, the game server can be started with:
     node server.js
 To start a new game as host, point your web browser to http://localhost:3000/host. Players should use their phones to browse to http://localhost:3000 to join the game. It is recommended that the host screen be set up so that all players can see it- either on a television, monitor, or through screen sharing in a video call.
 
+### Deploying to Google Cloud
+Before deploying, increment the version:
+
+    npm version (major | minor | prerelease)
+Then use the npm script to deploy to Google Cloud:
+
+    npm run-script deploy
+This script does not stop old versions or direct traffic to the new version, that must be done separately in the gcloud command line or in the google cloud console.
+
+
 ## Code Design
 The server is mainly a go-between for the players and host. 
 
