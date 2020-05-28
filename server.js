@@ -133,7 +133,8 @@ class Client {
 	// client will respond to "hello" with their ID
 	onHelloCallback (id = this.socketId, gameState = {}) {
 		let client = this;
-		let currentSocketId = client.socketId;		
+		let currentSocketId = client.socketId;
+		console.log(`${client.name} connected.`);		
 		client.id = id;
 		client.read()
 		.then( function (readResult) {			
@@ -154,7 +155,6 @@ class Client {
 			client.game = new Game(client.gameCode);
 			return client.game.read();
 		}).then( function () {
-			console.log(`${client.name} connected.`);
 			client.socket.on('gameState', client.onGameState.bind(client));
 			client.socket.on('requestNewGame', client.onRequestNewGame.bind(client));
 			client.socket.on('joinGame', client.onJoinGame.bind(client));
@@ -215,6 +215,7 @@ class Client {
 			console.log(`Unable to send state to ${this.gameCode}:${this.name}. State not found.`)
 		}
 		else {
+			console.log(`sendState ${this.name} version=${this.state.version}`)
 			this.socket.emit('playerState', this.state);
 		} 
 	}
@@ -275,10 +276,12 @@ class Client {
 	
 		console.log(`${client.name}: Join game ${gameCode} as ${playerName}`);
 	
+		// check if client is already in the game
 		if (client.gameCode == gameCode) {
-			// client is already in the game
-			console.log(`${client.name} is already joined to game ${gameCode}. Sending current state.`);
-			callback(client.state);
+				client.read().then( function () {
+				console.log(`${client.name} is already joined to game ${gameCode}. Returning state version=${client.state.version}`);
+				callback(client.state);
+				}).catch((err) => console.log(`onJoinGame: Error sending game state: ${err}`));
 		} else {
 			let game = new Game(gameCode);
 			let host;
@@ -326,8 +329,8 @@ class Client {
 			if (game && host.connected) {
 				console.log(`${client.name}: play ${playerAction} ${data}`);
 				host.socket.emit('play', client.id, playerAction, data,
-					function(success, msg = '') {
-						callback(success, msg);
+					function(playerState) {
+						callback(playerState);
 					});
 			} else {
 				console.log(`${client.name}: play ${playerAction} ${data} Error: game not found or the host is not connected.`);
