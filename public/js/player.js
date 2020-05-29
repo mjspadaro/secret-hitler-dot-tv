@@ -69,6 +69,8 @@ const events = {
 	},
 	
 	drawChaosCard: {
+		headline: 'The country has been thrown into <em>chaos</em>. You must now draw the top policy and enact it immediately.',
+		prompt: 'Draw policy',
 		info: 'Drawing the top policy... chaos here we come!',
 	},
 	
@@ -79,6 +81,7 @@ const events = {
 	discard: {
 		headline: "Choose a policy to <em>discard</em>.",
 		button: 'Discard Policy',
+		info: 'Done. The remaining policies have been passed to the Chancellor.'
 	},
 	
 	enactPolicy: (p) => ({
@@ -86,6 +89,7 @@ const events = {
 		body: p.ask.options.length < 3 ? "" : "Alternatively, you could propose to <em>veto</em> this agenda." +
 		"If the president approves your motion, the agenda will be tossed out and no policy will be passed during this legislative session.",
 		button: p.ask.options.length == 3 ? 'Submit' : 'Enact Policy',
+		info: p.ask.options.length == 3 ? 'All done! Waiting for other players...' : 'The policy has been enacted.'
 	}),
 
 	startExecution: {
@@ -97,11 +101,28 @@ const events = {
 	},
 	
 	startSpecialElection: {
-		info: 'Preparing for the special election...',
+		headline: 'You have the power to choose the <em>presidential candidate</em> for the next round.',
+		body: 'The regular presidential order will resume as normal the following round.',
+		button: 'Start special election',
+		info: 'Preparing for the special election...'
+	},
+
+	callSpecialElection: {
+		headline: 'Appoint the next presidential candidate.',
+		button: 'Appoint',
+		info: 'Ok! Your choice for presidential candidate has been submitted.'
 	},
 
 	startInvestigation: {
+		headline: 'You have the power to investigate another player\'s party loyalty.',
+		button: 'Start investigation',
 		info: 'Preparing for the investigation...',
+	},
+
+	investigate: {
+		headline: 'Choose the player you would like to investigate',
+		button: 'Investigate',
+		info: 'Investigating party loyalty...',
 	},
 	
 	confirmInvestigate: (p) => ({
@@ -112,7 +133,9 @@ const events = {
 	}),
 	
 	startPolicyPeek: {
-		info: 'Getting the next 3 policies...',
+		headline: 'You get to peek at the next three cards in the policy deck.',
+		button: 'Take a peek',
+		info: 'Getting the next three policies...',
 	},
 	
 	confirmPolicyPeek: (p) => ({
