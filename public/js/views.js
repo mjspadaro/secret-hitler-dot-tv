@@ -699,9 +699,8 @@ const VIEW_CLASSES = [
 			this.clear();
 			let headline = `${nominee.name} has been nominated for Chancellor. ${president.name} will start the election when everyone is ready.`;
 			
-			this.setHeadline(headline).then(new TransitionPause());
+			this.setHeadline(headline);
 			this.addCard(this.resources.playerFolder.texture, this.resources.playerFolder.texture, nominee.name);
-			let pause = new TransitionPause();
 		}
 	
 	},
