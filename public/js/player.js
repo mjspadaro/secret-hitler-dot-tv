@@ -58,7 +58,7 @@ const events = {
 	
 	nominateChancellor: {
 		info: 'Your nomination has been submitted.',
-		button: 'Nominate'
+		button: 'Submit Nomination'
 	},
 	
 	startElection: {
