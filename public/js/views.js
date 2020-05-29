@@ -697,7 +697,7 @@ const VIEW_CLASSES = [
 			let president = e.state.players.find(p => p.isPresident);			
 			let nominee = e.state.players.find(p => p.isNominee);			
 			this.clear();
-			let headline = `${president.name} has nominated ${nominee.name} for chancellor.`;
+			let headline = `${nominee.name} has been nominated for Chancellor. ${president.name} will start the election when everyone is ready.`;
 			
 			this.setHeadline(headline).then(new TransitionPause());
 			this.addCard(this.resources.playerFolder.texture, this.resources.playerFolder.texture, nominee.name);

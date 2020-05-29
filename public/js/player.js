@@ -61,6 +61,8 @@ const events = {
 	},
 	
 	startElection: {
+		headline: 'Start the election when everyone is ready.',
+		button: 'Start election',
 		info: 'Opening the polls...',
 	},
 	
@@ -70,7 +72,7 @@ const events = {
 	
 	drawChaosCard: {
 		headline: 'The country has been thrown into <em>chaos</em>. You must now draw the top policy and enact it immediately.',
-		prompt: 'Draw policy',
+		button: 'Draw policy',
 		info: 'Drawing the top policy... chaos here we come!',
 	},
 	
