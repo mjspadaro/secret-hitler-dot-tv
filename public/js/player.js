@@ -16,33 +16,15 @@ const events = {
 
 	confirmRole: function (p) {
 		
-		let headline = p.role == 'hitler' ? `You are <em>Hitler</em>.` : `You are a <em>${escapeHtml(p.role)}</em>.`;
+		let headline = p.role == 'hitler' ? `You are <em>Hitler</em>.` : `You are a <em>${escapeHtml(p.role)}</em>`;
 		let body = '';
 		if (p.hitlerName) {
-			body += ` <em>${escapeHtml(p.hitlerName)}</em> is Hitler.`;
+			body += `<em>Hitler</em><ul><li>${escapeHtml(p.hitlerName)}</li></ul>`;
 		}
-		switch (p.fascistNames.length) {
-		case 0:
-			if (p.role == 'hitler') {
-				body += ` Everyone else's identity is a <em>secret</em>'. Good luck!`;
-			} else if (p.role == 'fascist') {
-				body += ` There are no other fascists. Good luck!`;
-			} else {
-				body += ` Everyone else's identity is a <em>secret</em>. Good luck!`;
-			}
-			break;
-		case 1:
-			body += ` <em>${escapeHtml(p.fascistNames[0])}</em> is also a fascist. Everyone else is a liberal.`;
-			break;
-		case 2:
-			body += ` <em>${escapeHtml(p.fascistNames[0])}</em> and <em>${escapeHtml(p.fascistNames[1])}</em> are also fascists. Everyone else is a liberal.`;
-			break;
-		case 3:
-			body += ` <em>${escapeHtml(p.fascistNames[0])}</em>, <em>${escapeHtml(p.fascistNames[1])}</em>, and <em>${escapeHtml(p.fascistNames[2])}</em> are also fascists. Everyone else is a liberal.`;
-			break;
+		if (p.fascistNames.length > 0) {
+			body += `<em>Other fascists</em><ul><li>${p.fascistNames.join('</li><li>')}</li></ul>`;
 		}
-		
-		return { headline: headline, body: body, button: 'Got it!' };	
+		return { headline: headline, body: body, button: 'I understand' };	
 	},
 	
 	startGame: {

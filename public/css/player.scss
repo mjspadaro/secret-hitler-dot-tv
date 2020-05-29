@@ -55,10 +55,11 @@ form {
 
 .player-action-headline {
 	font-weight: normal;
+	margin-bottom: 25px;
 }
 
 .player-action-body {
-	margin-bottom: 20px;
+	margin-bottom: 25px;
 }
 
 em {
@@ -99,7 +100,7 @@ button {
 	background: $orange;
 	border: 2px solid lighten($orange, 20%);
 	padding: 10px 20px;
-	margin-top: 20px;
+	margin-top: 30px;
 	margin-bottom: 5px;
 	margin-left: auto;
 	margin-right: auto;

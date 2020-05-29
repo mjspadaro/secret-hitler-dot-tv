@@ -39,10 +39,11 @@ form {
   font-size: inherit; }
 
 .player-action-headline {
-  font-weight: normal; }
+  font-weight: normal;
+  margin-bottom: 25px; }
 
 .player-action-body {
-  margin-bottom: 20px; }
+  margin-bottom: 25px; }
 
 em {
   text-transform: uppercase;
@@ -78,7 +79,7 @@ button {
   background: #e66443;
   border: 2px solid #f2ae9d;
   padding: 10px 20px;
-  margin-top: 20px;
+  margin-top: 30px;
   margin-bottom: 5px;
   margin-left: auto;
   margin-right: auto;
