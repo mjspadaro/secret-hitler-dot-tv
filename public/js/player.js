@@ -24,7 +24,7 @@ const events = {
 		if (p.fascistNames.length > 0) {
 			body += `<em>Other fascists</em><ul><li>${p.fascistNames.join('</li><li>')}</li></ul>`;
 		}
-		return { headline: headline, body: body, button: 'I understand' };	
+		return { headline: headline, body: body, button: 'I understand', buttonDelay: 10 };	
 	},
 	
 	startGame: {
@@ -194,6 +194,7 @@ function getEvent(eventName, playerState = player) {
 		info: 'Done for now! Waiting on other players...',
 		body: '',
 		button: playerState.ask.options.length == 1 ? playerState.ask.options[0].text : 'Submit',
+		buttonDelay: 0,
 	};
 	
 		
@@ -270,10 +271,20 @@ function renderPlayerActionForm(playerState = player) {
 	}
 	$('#player-action-name').replaceWith(action);			
 	$('.player-action-submit').replaceWith(button);
-
 	$('#player-action').show();
-
 	enableForms();
+	activateButtonAfterDelay($('.player-action-submit button'), e.buttonDelay, e.button);
+
+}
+
+function activateButtonAfterDelay(buttonElem, delaySeconds, doneText) {
+	buttonElem.prop('disabled', delaySeconds >= 1);
+	if (delaySeconds >= 1) {
+		buttonElem.html(`Wait (${delaySeconds})...`);
+		setTimeout(activateButtonAfterDelay, 1000, buttonElem, delaySeconds - 1, doneText);
+	} else {
+		buttonElem.html(doneText);
+	}
 }
 
 function updatePlayerState(newState, forceRenderPlayerActionForm = false) {
