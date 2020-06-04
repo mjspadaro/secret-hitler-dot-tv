@@ -375,6 +375,25 @@ const VIEW_CLASSES = [
 	
 	},
 
+	class ControlPanelView extends GameView {
+		constructor () {
+			super(4);
+		}
+		load (e) {
+			super.load();
+			let versionLabel = new PIXI.Text('secrethitler.tv - version ' + document.getElementById('app-version').value, {
+				fontFamily: "Futura-Medium",
+				fontSize: 15,
+				fill: palette.beige,
+			});
+			versionLabel.anchor.x = 1;
+			versionLabel.anchor.y = 1;
+			versionLabel.x = 1575;
+			versionLabel.y = 875;
+			this.addChild(versionLabel);
+		}
+	},
+
 	class PlayerListView extends GameView {
 
 		constructor () {

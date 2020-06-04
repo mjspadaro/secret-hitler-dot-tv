@@ -13,6 +13,10 @@ body {
   background: #373633;
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0); }
 
+a, a:visited {
+  color: inherit;
+  text-decoration: underline; }
+
 #player-info, #error {
   max-width: 260px;
   position: relative;
@@ -71,6 +75,11 @@ em {
 
 #game-id {
   text-transform: uppercase; }
+
+#version {
+  font-size: 13px;
+  margin-top: 30px;
+  text-align: center; }
 
 button {
   position: relative;

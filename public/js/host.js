@@ -87,6 +87,7 @@ const ROUTE_TABLE = [
 	{ event: 'test', view: (v) => ['TableView', 'StatusView', 'PlayerListView'].indexOf(v.constructor.name) == -1 && v.loaded, method: 'unload', priority: 0 },
 	
 	{ event: 'requestNewGame', view: 'LobbyView', method: 'load'  },
+	{ event: 'requestNewGame', view: 'ControlPanelView', method: 'load'  },
 		
 	{ event: 'hostNewGame', view: 'LobbyView', method: 'onHostNewGame' },
 	
