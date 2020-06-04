@@ -5,16 +5,21 @@ class GameController {
 		this.game = game;
 		this.renderer = renderer;
 		this.socket = io();
-		this.clientId = '';
+		this.clientId = undefined;
 		this.routes = [];
 		this.views = this.renderer.views;
 		
-		this.socket.on('hello', this.onHello.bind(this));
+		this.socket.on('connect', this.onConnect.bind(this));
 		this.socket.on('joinGame', this.addPlayer.bind(this));
 		this.socket.on('play', this.play.bind(this));
 		this.socket.on('hostNewGame', this.hostNewGame.bind(this));		
-		this.socket.on('sendState', this.sendState.bind(this));		
-				
+		
+		this.renderer.app.width = 1600;
+		this.renderer.app.height = 900;
+		this.renderer.app.resizeTo = window;
+		this.renderer.onPreloadComplete = this.afterPreload.bind(this);
+
+
 	}
 	
 	// called each time a game event is completed
@@ -37,13 +42,29 @@ class GameController {
 		this.loop({ eventName: 'requestNewGame', playerId: '', playerName: 'Host', data: '', state: this.game.getState() });		
 	}
 	
-	onHello (id, callback) {
-		console.log(`Server: hello ${id}`);
-		if (!this.clientId) {
-			this.clientId = id;
-			console.log(`Controller: setting clientId = ${id}`);
+	onConnect () {
+		console.log(`hello ${this.clientId}`);
+		this.socket.emit('hello', this.clientId, this.afterHello.bind(this))
+	}
+
+	afterHello (id) {
+		this.clientId = id;
+		console.log(`Controller: setting clientId = ${id}`);
+		if (this.game.id) {
+			this.sendState();
+		} else {
+			this.startPreload();
 		}
-		callback(this.clientId, this.game.getState());
+	}
+
+	startPreload () {
+		this.renderer.preload(assets);
+	}
+
+	afterPreload () {
+		window.onresize = renderer.resize.bind(renderer);
+		renderer.initViews();
+		this.requestNewGame();
 	}
 	
 	// updates game state on the server, which in turn updates players

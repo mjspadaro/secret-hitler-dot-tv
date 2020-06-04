@@ -312,27 +312,9 @@ const TESTS = {
 
 
 function init() {
-	
 	document.getElementById("game-wrapper").appendChild(renderer.app.view);
-	
-	
-	renderer.app.width = 1600;
-	renderer.app.height = 900;
-	renderer.app.resizeTo = window;
-
-	renderer.onPreloadComplete = afterPreload;
-	
-	renderer.preload(assets);
-
 }
 
-function afterPreload() {
-	
-	window.onresize = renderer.resize.bind(renderer);
-	renderer.initViews();
-	controller.requestNewGame();
-	
-}
 
 
 

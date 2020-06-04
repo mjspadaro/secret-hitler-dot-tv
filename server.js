@@ -131,7 +131,7 @@ class Client {
 	
 	// handles reconnections
 	// client will respond to "hello" with their ID
-	onHelloCallback (id = this.socketId, gameState = {}) {
+	onHello (id = this.socketId, callback) {
 		let client = this;
 		let currentSocketId = client.socketId;
 		console.log(`${client.name} connected.`);		
@@ -162,14 +162,7 @@ class Client {
 			client.socket.on('disconnect', client.onDisconnect.bind(client));
 		})
 		.then( function () {
-			// request the latest state if this is the host
-			// send the latest state if this is a player
-			if (client.isHost) {
-				console.log(`Requesting updated game state for ${client.game.code} from ${client.name}`);
-				client.socket.emit('sendState');
-			} else if (client.state) {
-				client.sendState();
-			}
+			callback(client.id, client.state);
 		}).catch(function (err) { console.log(`Error initializaing client: ${err}`) });		
 	}
 	
@@ -390,7 +383,7 @@ function dbError(err = '') {
 io.on('connection', function(socket) {
 	console.log(`${socket.id}: connected`);		
 	let client = new Client(socket.id);
-	client.onConnect();
+	socket.on('hello', client.onHello.bind(client));
 });
 
 

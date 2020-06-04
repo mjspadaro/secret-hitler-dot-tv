@@ -1,7 +1,7 @@
 
 var socket = io();
 
-socket.on('hello', onHello);
+socket.on('connect', onConnect);
 socket.on('disconnect', function (socket) { setError('Error: unable to connect to server.'); disableForms(); });	
 
 const DEFAULT_PLAYER_STATE = {name: '', ask: {playerAction: '', complete: true}, id: '', gameStarted: false, version: -1};
@@ -318,15 +318,19 @@ function setError(err = '') {
 	}
 }
 
-function onHello(id = player.id, callback) {
-	setError();
-	console.log(`Server: hello ${id}`);
-	if (!player.id) {
-		player.id = id;
-		localStorage.setItem('playerId', id);
-		console.log(`Controller: setting clientId = ${id}`);
+function onConnect() {
+	console.log(`hello ${player.id}`);
+	socket.emit('hello', player.id, afterHello);
+}
+
+function afterHello(id = player.id, playerState) {
+	player.id = id;
+	localStorage.setItem('playerId', id);
+	console.log(`Controller: setting clientId = ${id}`);
+	if (player.gameStarted) {
+		updatePlayerState(playerState);
 	}
-	callback(player.id);
+	setError();
 	enableForms();
 }
 
