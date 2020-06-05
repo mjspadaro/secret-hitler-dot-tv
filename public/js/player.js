@@ -1,7 +1,7 @@
 
 var socket = io();
 
-socket.on('hello', onHello);
+socket.on('connect', onConnect);
 socket.on('disconnect', function (socket) { setError('Error: unable to connect to server.'); disableForms(); });	
 
 const DEFAULT_PLAYER_STATE = {name: '', ask: {playerAction: '', complete: true}, id: '', gameStarted: false, version: -1};
@@ -16,33 +16,17 @@ const events = {
 
 	confirmRole: function (p) {
 		
-		let headline = p.role == 'hitler' ? `You are <em>Hitler</em>.` : `You are a <em>${escapeHtml(p.role)}</em>.`;
+		let headline = p.role == 'hitler' ? `You are <em>Hitler</em>.` : `You are a <em>${escapeHtml(p.role)}</em>`;
 		let body = '';
 		if (p.hitlerName) {
-			body += ` <em>${escapeHtml(p.hitlerName)}</em> is Hitler.`;
+			body += `<p>${escapeHtml(p.hitlerName)} is <em>Hitler</em></p>`;
 		}
-		switch (p.fascistNames.length) {
-		case 0:
-			if (p.role == 'hitler') {
-				body += ` Everyone else's identity is a <em>secret</em>'. Good luck!`;
-			} else if (p.role == 'fascist') {
-				body += ` There are no other fascists. Good luck!`;
-			} else {
-				body += ` Everyone else's identity is a <em>secret</em>. Good luck!`;
-			}
-			break;
-		case 1:
-			body += ` <em>${escapeHtml(p.fascistNames[0])}</em> is also a fascist. Everyone else is a liberal.`;
-			break;
-		case 2:
-			body += ` <em>${escapeHtml(p.fascistNames[0])}</em> and <em>${escapeHtml(p.fascistNames[1])}</em> are also fascists. Everyone else is a liberal.`;
-			break;
-		case 3:
-			body += ` <em>${escapeHtml(p.fascistNames[0])}</em>, <em>${escapeHtml(p.fascistNames[1])}</em>, and <em>${escapeHtml(p.fascistNames[2])}</em> are also fascists. Everyone else is a liberal.`;
-			break;
+		if (p.fascistNames.length > 0) {
+			body += `<em>Other fascists</em><ul><li>${p.fascistNames.join('</li><li>')}</li></ul>`;
+		} else if (p.role == 'fascist') {
+			body += `<p>There are no other fascists.</p>`;
 		}
-		
-		return { headline: headline, body: body, button: 'Got it!' };	
+		return { headline: headline, body: body, button: 'I understand', buttonDelay: 10 };	
 	},
 	
 	startGame: {
@@ -58,9 +42,12 @@ const events = {
 	
 	nominateChancellor: {
 		info: 'Your nomination has been submitted.',
+		button: 'Submit Nomination'
 	},
 	
 	startElection: {
+		headline: 'Start the election when everyone is ready.',
+		button: 'Start election',
 		info: 'Opening the polls...',
 	},
 	
@@ -69,6 +56,8 @@ const events = {
 	},
 	
 	drawChaosCard: {
+		headline: 'The country has been thrown into <em>chaos</em>. You must now draw the top policy and enact it immediately.',
+		button: 'Draw policy',
 		info: 'Drawing the top policy... chaos here we come!',
 	},
 	
@@ -79,6 +68,7 @@ const events = {
 	discard: {
 		headline: "Choose a policy to <em>discard</em>.",
 		button: 'Discard Policy',
+		info: 'The remaining policies have been passed to the Chancellor.'
 	},
 	
 	enactPolicy: (p) => ({
@@ -86,6 +76,7 @@ const events = {
 		body: p.ask.options.length < 3 ? "" : "Alternatively, you could propose to <em>veto</em> this agenda." +
 		"If the president approves your motion, the agenda will be tossed out and no policy will be passed during this legislative session.",
 		button: p.ask.options.length == 3 ? 'Submit' : 'Enact Policy',
+		info: p.ask.options.length == 3 ? 'All done! Waiting for other players...' : 'The policy has been enacted.'
 	}),
 
 	startExecution: {
@@ -97,11 +88,28 @@ const events = {
 	},
 	
 	startSpecialElection: {
-		info: 'Preparing for the special election...',
+		headline: 'You have the power to choose the <em>presidential candidate</em> for the next round.',
+		body: 'The regular presidential order will resume as normal the following round.',
+		button: 'Start special election',
+		info: 'Preparing for the special election...'
+	},
+
+	callSpecialElection: {
+		headline: 'Appoint the next presidential candidate.',
+		button: 'Appoint',
+		info: 'Ok! Your choice for presidential candidate has been submitted.'
 	},
 
 	startInvestigation: {
+		headline: 'You have the power to investigate another player\'s party loyalty.',
+		button: 'Start investigation',
 		info: 'Preparing for the investigation...',
+	},
+
+	investigate: {
+		headline: 'Choose the player you would like to investigate',
+		button: 'Investigate',
+		info: 'Investigating party loyalty...',
 	},
 	
 	confirmInvestigate: (p) => ({
@@ -112,7 +120,9 @@ const events = {
 	}),
 	
 	startPolicyPeek: {
-		info: 'Getting the next 3 policies...',
+		headline: 'You get to peek at the next three cards in the policy deck.',
+		button: 'Take a peek',
+		info: 'Getting the next three policies...',
 	},
 	
 	confirmPolicyPeek: (p) => ({
@@ -186,6 +196,7 @@ function getEvent(eventName, playerState = player) {
 		info: 'Done for now! Waiting on other players...',
 		body: '',
 		button: playerState.ask.options.length == 1 ? playerState.ask.options[0].text : 'Submit',
+		buttonDelay: 0,
 	};
 	
 		
@@ -262,10 +273,20 @@ function renderPlayerActionForm(playerState = player) {
 	}
 	$('#player-action-name').replaceWith(action);			
 	$('.player-action-submit').replaceWith(button);
-
 	$('#player-action').show();
-
 	enableForms();
+	activateButtonAfterDelay($('.player-action-submit button'), e.buttonDelay, e.button);
+
+}
+
+function activateButtonAfterDelay(buttonElem, delaySeconds, doneText) {
+	buttonElem.prop('disabled', delaySeconds >= 1);
+	if (delaySeconds >= 1) {
+		buttonElem.html(`Wait (${delaySeconds})...`);
+		setTimeout(activateButtonAfterDelay, 1000, buttonElem, delaySeconds - 1, doneText);
+	} else {
+		buttonElem.html(doneText);
+	}
 }
 
 function updatePlayerState(newState, forceRenderPlayerActionForm = false) {
@@ -310,15 +331,19 @@ function setError(err = '') {
 	}
 }
 
-function onHello(id = player.id, callback) {
-	setError();
-	console.log(`Server: hello ${id}`);
-	if (!player.id) {
-		player.id = id;
-		localStorage.setItem('playerId', id);
-		console.log(`Controller: setting clientId = ${id}`);
+function onConnect() {
+	console.log(`hello ${player.id}`);
+	socket.emit('hello', player.id, afterHello);
+}
+
+function afterHello(id = player.id, playerState) {
+	player.id = id;
+	localStorage.setItem('playerId', id);
+	console.log(`Controller: setting clientId = ${id}`);
+	if (player.gameStarted) {
+		updatePlayerState(playerState);
 	}
-	callback(player.id);
+	setError();
 	enableForms();
 }
 

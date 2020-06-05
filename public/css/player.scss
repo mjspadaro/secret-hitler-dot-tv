@@ -23,6 +23,11 @@ body {
 	
 }
 
+a, a:visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
 #player-info, #error {
 	max-width: 260px;
 	position: relative;
@@ -55,10 +60,11 @@ form {
 
 .player-action-headline {
 	font-weight: normal;
+	margin-bottom: 25px;
 }
 
 .player-action-body {
-	margin-bottom: 20px;
+	margin-bottom: 25px;
 }
 
 em {
@@ -92,6 +98,12 @@ em {
 	text-transform: uppercase;
 }
 
+#version {
+	font-size: 13px;
+	margin-top: 30px;
+	text-align: center;
+}
+
 button {
 	position: relative;
 	display: block;
@@ -99,7 +111,7 @@ button {
 	background: $orange;
 	border: 2px solid lighten($orange, 20%);
 	padding: 10px 20px;
-	margin-top: 20px;
+	margin-top: 30px;
 	margin-bottom: 5px;
 	margin-left: auto;
 	margin-right: auto;

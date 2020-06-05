@@ -7,7 +7,7 @@ const datastore = new Datastore();
 
 async function listKind(kind, fields = []) {
   // The kind for the new entity
-	const query = datastore.createQuery(kind).select(fields).order('updated', {descending: true}).limit(10);
+	const query = datastore.createQuery(kind).select(fields).order('created', {descending: true}).limit(10);
   
 	const [results] = await datastore.runQuery(query);
 	console.log(`${kind}\n----------------------------------`);

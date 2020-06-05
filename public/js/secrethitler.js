@@ -46,7 +46,7 @@ function SecretHitlerGame(gameId = '') {
 	
 	
 	// create a random 4-digit game id
-	this.id = gameId ? gameId : Math.floor(Math.random() * 10000);
+	this.id = gameId;
 	
 	// an array which points to executive action functions
 	// changed by initRules to suit the current # of players

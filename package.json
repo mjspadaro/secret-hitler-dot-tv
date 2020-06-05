@@ -1,11 +1,12 @@
 {
  "name": "secrethitlerdottv",
- "version": "1.1.4-alpha.1",
+ "version": "1.2.0-alpha",
  "author": "Michael Spadaro",
  "description": "Online multiplayer secret hitler game",
  "license": "CC-BY-NC-SA-4.0",
  "dependencies": {
   "@google-cloud/datastore": "^5.1.0",
+  "ejs": "^3.1.3",
   "express": "^4.17",
   "socket.io": "^2.3.0"
  },
@@ -22,7 +23,8 @@
   "start": "node server.js",
   "dbstart": "gcloud beta emulators datastore start",
   "devstart": "export DATASTORE_DATASET=secrethitlerdottv && export DATASTORE_EMULATOR_HOST=localhost:8081 && export DATASTORE_EMULATOR_HOST_PATH=localhost:8081/datastore && export DATASTORE_HOST=http://localhost:8081 && export DATASTORE_PROJECT_ID=secrethitlerdottv && node-sass public/css/player.scss public/css/player.css && node --inspect server.js",
-  "deploy": "gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')"
+  "deploy-staging": "gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')",
+  "deploy-production": "gcloud beta app deploy --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')"
  },
  "engines": {
   "node": "12.x"

@@ -12,12 +12,14 @@ const datastore = new Datastore();
 // set writeDelayMS to zero for production! this is just to simulate database latency for debugging
 const writeDelay = 0;
 
+app.engine('html', require('ejs').renderFile);
+
 app.get('/', function(req, res) {
-	res.sendFile(__dirname + '/public/player.html');
+	res.render(__dirname + '/public/player.html', {version: process.env.npm_package_version});
 });
 
 app.get('/host', function(req, res) {
-	res.sendFile(__dirname + '/public/host.html');
+	res.render(__dirname + '/public/host.html', {version: process.env.npm_package_version});
 });
 
 app.use('/images', express.static(__dirname + '/public/images'));
@@ -25,6 +27,8 @@ app.use('/js', express.static(__dirname + '/public/js'));
 app.use('/css', express.static(__dirname + '/public/css'));
 app.use('/fonts', express.static(__dirname + '/public/fonts'));
 
+
+console.log('SECRETHITLER.TV SERVER -- RUNNING VERSION ' + process.env.npm_package_version);
 
 http.listen(LISTEN_PORT, function() {
 	console.log('listening on *:' + LISTEN_PORT);
@@ -73,8 +77,8 @@ class Game {
 			console.log(`Checking code ${checkUnique.code} for uniqueness.`);
 		} while (await checkUnique.read())
 		this.code = checkUnique.code;
-		this.key = datastore.key('Game');
-  	await datastore.insert(this.entity).catch((err) => console.log(`ERROR: Game.create ${this.code} ${err}`));
+		this.key = datastore.key(['Game', this.code]);
+		return this.update();
 	}
 
 	async read() {
@@ -131,7 +135,7 @@ class Client {
 	
 	// handles reconnections
 	// client will respond to "hello" with their ID
-	onHelloCallback (id = this.socketId, gameState = {}) {
+	onHello (id = this.socketId, callback) {
 		let client = this;
 		let currentSocketId = client.socketId;
 		console.log(`${client.name} connected.`);		
@@ -162,14 +166,7 @@ class Client {
 			client.socket.on('disconnect', client.onDisconnect.bind(client));
 		})
 		.then( function () {
-			// request the latest state if this is the host
-			// send the latest state if this is a player
-			if (client.isHost) {
-				console.log(`Requesting updated game state for ${client.game.code} from ${client.name}`);
-				client.socket.emit('sendState');
-			} else if (client.state) {
-				client.sendState();
-			}
+			callback(client.id, client.state);
 		}).catch(function (err) { console.log(`Error initializaing client: ${err}`) });		
 	}
 	
@@ -390,7 +387,7 @@ function dbError(err = '') {
 io.on('connection', function(socket) {
 	console.log(`${socket.id}: connected`);		
 	let client = new Client(socket.id);
-	client.onConnect();
+	socket.on('hello', client.onHello.bind(client));
 });
 
 

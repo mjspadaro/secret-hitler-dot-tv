@@ -87,6 +87,7 @@ const ROUTE_TABLE = [
 	{ event: 'test', view: (v) => ['TableView', 'StatusView', 'PlayerListView'].indexOf(v.constructor.name) == -1 && v.loaded, method: 'unload', priority: 0 },
 	
 	{ event: 'requestNewGame', view: 'LobbyView', method: 'load'  },
+	{ event: 'requestNewGame', view: 'ControlPanelView', method: 'load'  },
 		
 	{ event: 'hostNewGame', view: 'LobbyView', method: 'onHostNewGame' },
 	
@@ -312,27 +313,9 @@ const TESTS = {
 
 
 function init() {
-	
 	document.getElementById("game-wrapper").appendChild(renderer.app.view);
-	
-	
-	renderer.app.width = 1600;
-	renderer.app.height = 900;
-	renderer.app.resizeTo = window;
-
-	renderer.onPreloadComplete = afterPreload;
-	
-	renderer.preload(assets);
-
 }
 
-function afterPreload() {
-	
-	window.onresize = renderer.resize.bind(renderer);
-	renderer.initViews();
-	controller.requestNewGame();
-	
-}
 
 
 
