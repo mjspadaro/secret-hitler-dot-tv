@@ -19,10 +19,12 @@ const events = {
 		let headline = p.role == 'hitler' ? `You are <em>Hitler</em>.` : `You are a <em>${escapeHtml(p.role)}</em>`;
 		let body = '';
 		if (p.hitlerName) {
-			body += `<em>Hitler</em><ul><li>${escapeHtml(p.hitlerName)}</li></ul>`;
+			body += `<p>${escapeHtml(p.hitlerName)} is <em>Hitler</em></p>`;
 		}
 		if (p.fascistNames.length > 0) {
 			body += `<em>Other fascists</em><ul><li>${p.fascistNames.join('</li><li>')}</li></ul>`;
+		} else if (p.role == 'fascist') {
+			body += `<p>There are no other fascists.</p>`;
 		}
 		return { headline: headline, body: body, button: 'I understand', buttonDelay: 10 };	
 	},
@@ -66,7 +68,7 @@ const events = {
 	discard: {
 		headline: "Choose a policy to <em>discard</em>.",
 		button: 'Discard Policy',
-		info: 'Done. The remaining policies have been passed to the Chancellor.'
+		info: 'The remaining policies have been passed to the Chancellor.'
 	},
 	
 	enactPolicy: (p) => ({
