@@ -77,8 +77,8 @@ class Game {
 			console.log(`Checking code ${checkUnique.code} for uniqueness.`);
 		} while (await checkUnique.read())
 		this.code = checkUnique.code;
-		this.key = datastore.key('Game');
-  	await datastore.insert(this.entity).catch((err) => console.log(`ERROR: Game.create ${this.code} ${err}`));
+		this.key = datastore.key(['Game', this.code]);
+		return this.update();
 	}
 
 	async read() {
