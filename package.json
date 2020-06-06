@@ -24,6 +24,7 @@
   "start": "node server.js",
   "dbstart": "gcloud beta emulators datastore start",
   "devstart": "$(gcloud beta emulators datastore env-init) && node --inspect server.js",
+  "devstart-multi": "$(gcloud beta emulators datastore env-init) && node server.js & $(gcloud beta emulators datastore env-init) && export PORT=3001 && node server.js",
   "deploy-staging": "gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')",
   "deploy-production": "gcloud beta app deploy --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')"
  },
