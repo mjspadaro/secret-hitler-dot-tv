@@ -610,6 +610,7 @@ SecretHitlerGame.prototype.getState = function () {
 		playerState.gameStarted = this.started;
 		playerState.gameOver = this.winner ? true : false;
 		// see state.version above
+		playerState.gameId = state.id;
 		playerState.version = state.version;
 		state.players.push(playerState); 
 	}
