@@ -5,20 +5,18 @@ class GameController {
 		this.game = game;
 		this.renderer = renderer;
 		this.socket = io();
-		this.clientId = undefined;
+		this.credentials = {};
 		this.routes = [];
 		this.views = this.renderer.views;
 		
 		this.socket.on('connect', this.onConnect.bind(this));
-		this.socket.on('joinGame', this.addPlayer.bind(this));
-		this.socket.on('play', this.play.bind(this));
-		this.socket.on('hostNewGame', this.hostNewGame.bind(this));		
+		this.socket.on('addPlayer', this.addPlayer.bind(this));
+		this.socket.on('playTurn', this.play.bind(this));
 		
 		this.renderer.app.width = 1600;
 		this.renderer.app.height = 900;
 		this.renderer.app.resizeTo = window;
 		this.renderer.onPreloadComplete = this.afterPreload.bind(this);
-
 
 	}
 	
@@ -36,20 +34,18 @@ class GameController {
 			
 	// sends new game requests to server
 	requestNewGame () {
-		this.socket.emit('requestNewGame', this.hostNewGame.bind(this));
-		// this stores our prior socket ID in case we need to reconnect
-		this.oldSocketId = this.socket.id;
+		this.socket.emit('createGame', {}, this.hostNewGame.bind(this));
 		this.loop({ eventName: 'requestNewGame', playerId: '', playerName: 'Host', data: '', state: this.game.getState() });		
 	}
 	
 	onConnect () {
-		console.log(`hello ${this.clientId}`);
-		this.socket.emit('hello', this.clientId, this.afterHello.bind(this))
+		console.log(`authenticate ${this.credentials}`);
+		this.socket.emit('authenticate', this.credentials, this.afterAuthenticate.bind(this))
 	}
 
-	afterHello (id) {
-		this.clientId = id;
-		console.log(`Controller: setting clientId = ${id}`);
+	afterAuthenticate (credentials) {
+		this.credentials = credentials;
+		console.log(`Controller: setting credentials = ${JSON.stringify(credentials)}`);
 		if (this.game.id) {
 			this.sendState();
 		} else {
@@ -70,14 +66,13 @@ class GameController {
 	// updates game state on the server, which in turn updates players
 	sendState (state = this.game.getState()) {
 		console.log(`Host: gameState version=${state.version}`);
-		this.socket.emit('gameState', state, function (success, msg = '') {
-			if (!success) {
-				this.onError("Error: Unable to update game state on server. " + msg);
+		this.socket.emit('updateGameState', { gameState: state }, function (response) {
+			if (response.error) {
+				this.onError("Error: Unable to update game state on server. " + response.error);
 			} });
 	}
 	
-	// handles hostNewGame requests from the server
-	hostNewGame (gameId, msg) {
+	hostNewGame ({code: gameId}) {
 		if (gameId) {
 			this.game.id = gameId;
 			this.loop({ eventName: 'hostNewGame', playerId: '', playerName: 'Server', data: gameId, state: this.game.getState() }); 
@@ -87,13 +82,12 @@ class GameController {
 	} 
 	
 	// passes the add player request to the game model
-	addPlayer (playerId, playerName, callback) {
+	addPlayer ({playerName, playerId}, callback) {
 		let joinGameEvent = this.game.addPlayer(playerName, playerId);
-		if (joinGameEvent) {
-			callback(joinGameEvent.data);
-		} else {
-			callback(false, 'Unable to add player- game has already started or game is full.');
+		if (!joinGameEvent) {
+			// send an error to the player?
 		}
+		callback();
 		this.loop(joinGameEvent);
 	}
 	
@@ -164,18 +158,13 @@ class GameController {
 	
 	// passes requests to the game model
 	// returns event and state on success, false on error
-	play (playerId, playerAction, value, callback) {
+	play ({playerId, action, value}, callback) {
 
-		let success = false;
-		let msg = '';
-		let e = this.game.play(playerId, playerAction, value);
-
-		if (e) {
-			callback(e.state.players.find(p => p.id === playerId));
-		} else {
-			callback(false);
+		callback();
+		let e = this.game.play(playerId, action, value);
+		if (!e) {
+			// send an error to the player?
 		}
-
 		this.loop(e);
 		
 		return true;

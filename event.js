@@ -25,10 +25,9 @@ const createHandler = (event, client) => {
 const createErrorResponse = (errorMessage) => ({ error: errorMessage });
 
 const handleAuthenticate = async (event) => {
-  const {client, payload: credentials} = event;
+  const credentials = event.payload;
   const isCredentialsValid = async (credentials) => credentials.clientId && credentials.secret && await Database.getClientSecret(credentials.clientId) === credentials.secret;
   const setClientCredentials = async (credentials) => {
-    client.setClientId(credentials.clientId);
     await Database.setClientSecret(credentials.clientId, credentials.secret);
   }
   const resetCredentials = async (credentials) => {
@@ -37,20 +36,21 @@ const handleAuthenticate = async (event) => {
     await setClientCredentials(newCredentials);
     return newCredentials;
   }
-  const clientSocketId = client.getSocket().id;
+  const clientSocketId = event.client.getSocket().id;
   const verifiedCredentials = await isCredentialsValid(credentials) ? credentials : await resetCredentials({clientId: clientSocketId});
+  event.client.setClientId(verifiedCredentials.clientId);
   await Database.setClientSocketId(verifiedCredentials.clientId, clientSocketId);
   await Database.setClientExpire(verifiedCredentials.clientId, CLIENT_TTL);
   await Message.subscribeToClientMessages(verifiedCredentials.clientId);
-  if (typeof client.getSocket().on != 'undefined')
-    client.getSocket().on('disconnect', () => Message.unsubscribeFromClientMessages(verifiedCredentials.clientId));
-  await Message.deliverAllClientMessages(verifiedCredentials.clientId, client.getSocket());
+  if (typeof event.client.getSocket().on != 'undefined')
+    event.client.getSocket().on('disconnect', () => Message.unsubscribeFromClientMessages(verifiedCredentials.clientId));
+  await Message.deliverAllClientMessages(verifiedCredentials.clientId, event.client.getSocket());
   return verifiedCredentials;
 }
 
 const handleJoinGame = async (event) => {
-  const { client, payload: { playerName, gameCode } } = event;
-  const clientId = client.getClientId();
+  const { playerName, gameCode } = event.payload;
+  const clientId = event.client.getClientId();
   if (!clientId) return createErrorResponse('Client is not authenticated');
   if (!gameCode) return createErrorResponse('Game code is missing');
   if (!playerName) return createErrorResponse('Player name is missing');

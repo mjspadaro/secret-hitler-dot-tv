@@ -8,7 +8,7 @@ const DEFAULT_PLAYER_STATE = {name: '', ask: {playerAction: '', complete: true},
 
 var player = Object.assign({}, DEFAULT_PLAYER_STATE);
 player.name = localStorage.getItem('playerName');
-player.id = localStorage.getItem('playerId');
+credentials = JSON.parse(localStorage.getItem('credentials')) || {};
 
 var gameId = localStorage.getItem('gameId');
 
@@ -173,11 +173,10 @@ function joinGame(e) {
 		player.name = $("#player-name").val();
 		gameId = $("#game-id").val();
 		console.log(`Joining game ${gameId} as ${player.name}`);
-		socket.emit('joinGame', player.name, gameId, afterJoinGame);
+		socket.emit('joinGame', { playerName: player.name, gameCode: gameId }, afterJoinGame);
 	}
 	
-	socket.on('playerState', updatePlayerState);
-	
+	socket.on('updatePlayerState', (response) => updatePlayerState(response.playerState));
 }
 
 function onGameOver() {
@@ -290,14 +289,17 @@ function activateButtonAfterDelay(buttonElem, delaySeconds, doneText) {
 }
 
 function updatePlayerState(newState, forceRenderPlayerActionForm = false) {
-	console.log(`updatePlayerState name=${newState.name} version=${newState.version} playerAction=${newState.ask.playerAction} complete=${newState.ask.complete}`);
+	console.log(`updatePlayerState name=${newState.name} gameId=${newState.gameId} version=${newState.version} playerAction=${newState.ask.playerAction} complete=${newState.ask.complete}`);
 
+	// ignore states that aren't part of the game we think we're in
+	if (newState.gameId != gameId) return console.warn(`Ignoring state for invalid gameId=${newState.gameId}`);
 	// ignore states that are older than the version we already have
 	if (newState.version < player.version) return console.warn(`Ignoring out of sequence player state: version=${newState.version}`);
 	// if the game is over, reset the game so the player can join again and return
 	if (newState.gameOver) return onGameOver();
 
-	localStorage.setItem('playerId', newState.id);
+	$('#join-game').hide();
+
 	localStorage.setItem('gameId', gameId);
 	localStorage.setItem('playerName', newState.name);		
 
@@ -332,25 +334,24 @@ function setError(err = '') {
 }
 
 function onConnect() {
-	console.log(`hello ${player.id}`);
-	socket.emit('hello', player.id, afterHello);
+	socket.emit('authenticate', credentials, (response) => {
+		if (response.error) {
+			setError(response.error);
+		} else {
+			setError();
+			credentials = response;
+			console.log(`Authenticated as ${JSON.stringify(credentials)}`);
+			localStorage.setItem('credentials', JSON.stringify(credentials));
+			enableForms();
+		}
+	});
 }
 
-function afterHello(id = player.id, playerState) {
-	player.id = id;
-	localStorage.setItem('playerId', id);
-	console.log(`Controller: setting clientId = ${id}`);
-	if (player.gameStarted) {
-		updatePlayerState(playerState);
-	}
-	setError();
+function afterJoinGame(response = {}) {
 	enableForms();
-}
-
-function afterJoinGame(playerState, err = 'Error: unable to join.') {
-	enableForms();
-	if (playerState) {
-		// only show this if the game hasn't started
+	if (response.error) {
+		setError(response.error);
+	} else {
 		if (!playerState.gameStarted) {
 			setInfo("You're in! Waiting for more players to join...");
 		} else {
@@ -359,9 +360,6 @@ function afterJoinGame(playerState, err = 'Error: unable to join.') {
 		$('#player-info').show();
 		$('#join-game').hide();
 		$('#error').hide();
-		updatePlayerState(playerState);
-	} else {
-		setError(err);
 	}
 }
 
@@ -373,50 +371,20 @@ function play (e) {
 	if ($('.player-action-option>input:checked').val() !== undefined) {
 		let playerAction = $('#player-action-name').val();
 		let data = $('.player-action-option>input:checked').val();
-		socket.emit('play', playerAction, data, afterPlay);	
+		socket.emit('playTurn', { action: playerAction, value: data }, (response) => {
+			enableForms();
+			if (response.error) {
+				setError(response.error);
+			} else {
+				$('#player-action').hide();
+				$('#player-info').show();	
+			}
+		});
 	} else {
 		setError("Please select an option to proceed.");
 		enableForms();
 	}
 }
-
-function afterPlay(newState, msg = 'Error: there was a problem, please try again.') {
-
-	if (newState) {
-		$('#player-action').hide();
-		$('#player-info').show();
-		// uncommenting below will cause the state to be updated immediately after the play
-		// consider implementing in the future, but for now, let's make them wait for host renders like everyone else
-		// updatePlayerState(newState);
-	} else {
-		setError(msg);
-		enableForms();
-	}
-}
-
-function setCookie(cname, cvalue, exdays) {
-  var d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  var expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
-
-function getCookie(cname) {
-  var name = cname + "=";
-  var decodedCookie = decodeURIComponent(document.cookie);
-  var ca = decodedCookie.split(';');
-  for(var i = 0; i <ca.length; i++) {
-    var c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return "";
-}
-
 
 function escapeHtml(unsafe = '') {
 	unsafe += '';
