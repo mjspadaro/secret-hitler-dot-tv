@@ -56,6 +56,7 @@ const handleJoinGame = async (event) => {
   if (!playerName) return createErrorResponse('Player name is missing');
   const game = await Game.get(gameCode);
   if (!game) return createErrorResponse('Game not found');
+  if (Database.getClientGameCode(clientId) == gameCode) return {};
   Game.addPlayer(game, clientId, playerName);
   await Database.setClientExpire(clientId, CLIENT_TTL);
   return {};
