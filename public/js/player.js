@@ -216,7 +216,8 @@ function handleJoinGameSubmit(submitEvent) {
     updateUIState(UI_JOIN);
     return;
   }
-  setError();
+	setError();
+	getIdleMessageBox().html("You're in!");
 	renderUIState(UI_SUBMIT_JOIN);
 	if (gameId != globalPlayerState.gameId)
 		resetPlayerState();
