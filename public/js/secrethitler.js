@@ -98,6 +98,7 @@ function SecretHitlerGame(gameId = '') {
 		'investigationTarget',
 		'investigationResult',
 		'policyPeek',
+		'turnCount'
 	];
 
 	// define string literals
@@ -259,6 +260,8 @@ SecretHitlerGame.prototype.play = function(playerId, playerAction, value) {
 	var player = this.getPlayer(playerId);
 	var event = false;
 	
+	player.turnCount++;
+
 	if (player === undefined) {
 		event = { eventName: 'error', playerName: '', playerId: playerId, data: this.t.error.unknownPlayer + ` "${playerId}"`, state: this.getState() };
 		
@@ -1108,6 +1111,7 @@ function SecretHitlerPlayer(playerName, id) {
 	this.role = ''; // "Liberal", "Fascist", or "Hitler"
 	this.party = ''; // "Liberal" or "Fascist"
 	this.order = ''; // the player's position in the turn order
+	this.turnCount = 0; // the number of turns played - used to help the player client know when it's a new turn
 
 	this.isAlive = true;
 
