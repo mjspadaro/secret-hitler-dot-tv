@@ -422,6 +422,7 @@ SecretHitlerGame.prototype.getPlayer = function (id) {
 // add players to the game, returns the player object
 SecretHitlerGame.prototype.addPlayer = function(playerName = '', id, isAI = false) {
 	if (this.players.length >= 10 || this.started) return false;
+	if (this.getPlayer(id)) return false;
 	var player = new SecretHitlerPlayer(playerName, id);
 	player.isAI = isAI;
 	var playerNumber = this.players.push(player);
