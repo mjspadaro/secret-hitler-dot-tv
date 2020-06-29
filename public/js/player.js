@@ -1,16 +1,43 @@
+var socket;
 
-var socket = io();
+const UI_JOIN = 'ui_join';
+const UI_SUBMIT_JOIN = 'ui_submit_join';
+const UI_IDLE = 'ui_idle';
+const UI_PLAY_TURN = 'ui_play_turn';
+const UI_SUBMIT_TURN = 'ui_submit_turn';
+const UI_GAME_OVER = 'ui_game_over';
 
-socket.on('connect', onConnect);
-socket.on('disconnect', function (socket) { setError('Error: unable to connect to server.'); disableForms(); });	
+const getJoinGameForm = () => $('#join-game');
+const getPlayTurnForm = () => $('#player-action');
+const getIdleMessageBox = () => $('#player-info');
+const getErrorMessageBox = () => $('#error');
+const getPlayerNameInput = () => $("#player-name");
+const getGameIdInput = () =>$("#game-id");
 
-const DEFAULT_PLAYER_STATE = {name: '', ask: {playerAction: '', complete: true}, id: '', gameStarted: false, version: -1};
+const DEFAULT_PLAYER_STATE = { name: '', ask: {playerAction: '', complete: true}, id: '', gameStarted: false, gameId: '', version: -1, turnCount: -1 };
 
-var player = Object.assign({}, DEFAULT_PLAYER_STATE);
-player.name = localStorage.getItem('playerName');
-credentials = JSON.parse(localStorage.getItem('credentials')) || {};
+var credentials = JSON.parse(localStorage.getItem('credentials')) || {};
+var lastTurnCount = -1;
+var globalUIState;
 
-var gameId = localStorage.getItem('gameId');
+const resetPlayerState = () => globalPlayerState = Object.assign({}, DEFAULT_PLAYER_STATE);
+const savePlayerStateToLocalStorage = (state = globalPlayerState) => localStorage.setItem('playerState', JSON.stringify(state));
+const getPlayerStateFromLocalStorage = () => JSON.parse(localStorage.getItem('playerState'));
+const loadPlayerStateFromLocalStorage = () => globalPlayerState = {...DEFAULT_PLAYER_STATE, ...getPlayerStateFromLocalStorage()};
+const removePlayerStateFromLocalStorage = () => localStorage.removeItem('playerState');
+
+const isGameOver = (state = globalPlayerState) => state.gameOver || false;
+const isPlayerTurn = (state = globalPlayerState) => !state.ask.complete && state.ask.playerAction;
+const isNewTurn = (state = globalPlayerState) => {
+  if (isPlayerTurn(state) && state.turnCount > lastTurnCount) {
+    lastTurnCount = state.turnCount;
+    return true;
+  } else {
+    return false;
+  }
+}
+const disableForms = (disabled = true) => $('input,button').each((i, e) => $(e).prop('disabled', disabled));
+const enableForms = () => disableForms(false);
 
 const events = {
 
@@ -136,93 +163,155 @@ const events = {
 window.onload = function () { onLoad() };
 
 function onLoad() {
-  $('#join-game').submit($('#join-game'), joinGame); 
-	$('#player-action').submit($('#player-action'), play);
-	
-	if (gameId) {
-		$('#game-id').val(gameId);
-	}
-	
-	if (player.name) {
-		$('#player-name').val(player.name);
-	}
+  getJoinGameForm().submit(getJoinGameForm(), handleJoinGameSubmit); 
+	getPlayTurnForm().submit(getPlayTurnForm(), handlePlayTurnSubmit);
+	loadPlayerStateFromLocalStorage();
+  getGameIdInput().val(globalPlayerState.gameId);
+  getPlayerNameInput().val(globalPlayerState.name);
+	renderUIState(UI_JOIN);
+	initializeSocket();
 }
 
-function disableForms(disabled = true) {
-
-	$('input,button').each((i, e) => $(e).prop('disabled', disabled));
+function initializeSocket() {
+	socket = io();
+	socket.on('updatePlayerState', handleUpdatePlayerState );
+	socket.on('connect', handleSocketConnect);
 }
 
-function enableForms() {
-	disableForms(false);
+function handleSocketConnect() {
+	socket.emit('authenticate', credentials, (response) => {
+		if (response.error) {
+      setError(response.error);
+		} else {
+			setError();
+			credentials = response;
+			console.log(`Authenticated as ${JSON.stringify(credentials)}`);
+			localStorage.setItem('credentials', JSON.stringify(credentials));
+		}
+	});
 }
 
-function joinGame(e) {
-
+function handleFormSubmit(submitEvent) {
 	disableForms();
-	e.preventDefault(); // prevents page reloading
-	
-	if ($("#player-name").val().length < 1) {
+	submitEvent.preventDefault();
+	const formError = socket.connected ? '' : 'Unable to connect to server';
+	setError(formError);
+	if (formError)
+		enableForms();
+	return formError;
+}
+
+function handleJoinGameSubmit(submitEvent) {
+	const formError = handleFormSubmit(submitEvent);
+	if (formError) return;
+	let playerName = getPlayerNameInput().val();
+	let gameId = getGameIdInput().val();
+	if (playerName.length < 1) {
 		setError("Don't forget to enter your name!");
-		enableForms();
-	} else if ($("#game-id").val().length != 4) {
+    updateUIState(UI_JOIN);
+    return;
+  }
+  if (gameId.length != 4) {
 		setError("Please enter a valid game code.");
-		enableForms();
-	} else {
-		$('#error').hide();
-		player.name = $("#player-name").val();
-		gameId = $("#game-id").val();
-		console.log(`Joining game ${gameId} as ${player.name}`);
-		socket.emit('joinGame', { playerName: player.name, gameCode: gameId }, afterJoinGame);
+    updateUIState(UI_JOIN);
+    return;
+  }
+  setError();
+	renderUIState(UI_SUBMIT_JOIN);
+	if (gameId != globalPlayerState.gameId)
+		resetPlayerState();
+  globalPlayerState.name = playerName;
+  globalPlayerState.gameId = gameId;
+	console.log(`Joining game ${globalPlayerState.gameId} as ${globalPlayerState.name}`);
+	socket.emit('joinGame', { playerName: globalPlayerState.name, gameCode: globalPlayerState.gameId },
+		(response) => {
+			if (response.error) {
+				setError(response.error);
+				renderUIState(UI_JOIN);
+			} else {
+				renderUIState();
+			}
+		});
+}
+
+const getPlayTurnFormValue = () => $('.player-action-option>input:checked').val();
+const getPlayTurnFormAction = () => $('#player-action-name').val();
+
+function handlePlayTurnSubmit (submitEvent) {
+	const formError = handleFormSubmit(submitEvent);
+	if (formError) return;
+	let playTurnFormValue = getPlayTurnFormValue();
+	let playTurnFormAction = getPlayTurnFormAction();
+
+	if (playTurnFormValue === undefined) {
+		setError("Please select an option to proceed.");
+		renderUIState(UI_PLAY_TURN);
+		return;
 	}
+
+	renderUIState(UI_SUBMIT_TURN);
+
+	socket.emit('playTurn', { action: playTurnFormAction, value: playTurnFormValue }, (response) => {
+		if (response.error) {
+			setError(response.error);
+			renderUIState(UI_PLAY_TURN);
+		} else {
+			renderUIState(UI_IDLE);
+		}
+	});
+}
+
+const getUIStateFromPlayerState = (playerState = globalPlayerState) => isNewTurn() ? UI_PLAY_TURN : isGameOver() ? UI_GAME_OVER : UI_IDLE;
+
+function handleUpdatePlayerState (payload, callback) {
+	callback();
+	console.log(payload.playerState);
+  if (!payload.playerState)
+    return console.warn('Player state not provided in request payload');
+  if (payload.playerState.version < globalPlayerState.version)
+    return console.warn(`Ignoring out of state playerState version (${payload.playerState.version})`);
+  if (payload.playerState.gameId != globalPlayerState.gameId)
+    return console.warn(`Ignoring playerState for unrecognized game (${payload.playerState.gameId})`);
+  globalPlayerState = payload.playerState;
+	savePlayerStateToLocalStorage(globalPlayerState);
+	if (isGameOver())
+		handleGameOver();
+  renderUIState();
+}
+
+function renderUIState (UIState = getUIStateFromPlayerState()) {
+	if (UIState == globalUIState)
+		return;
+	if (globalUIState == UI_PLAY_TURN && UIState != UI_SUBMIT_TURN)
+		return;
+	if (globalUIState == UI_JOIN && UIState != UI_SUBMIT_JOIN)
+		return;
+
+	[UI_SUBMIT_JOIN, UI_SUBMIT_TURN].includes(globalUIState) ? disableForms() : enableForms();
+
+	if (UIState == UI_PLAY_TURN)
+		renderPlayTurnForm();
+
+	globalUIState = UIState;
 	
-	socket.on('updatePlayerState', (response) => updatePlayerState(response.playerState));
+	[UI_JOIN, UI_SUBMIT_JOIN, UI_GAME_OVER].includes(globalUIState) ? getJoinGameForm().show() : getJoinGameForm().hide();
+	[UI_IDLE, UI_GAME_OVER].includes(globalUIState) ? getIdleMessageBox().show() : getIdleMessageBox().hide();
+  [UI_PLAY_TURN, UI_SUBMIT_TURN].includes(globalUIState) ? getPlayTurnForm().show() : getPlayTurnForm().hide();
 }
 
-function onGameOver() {
-	localStorage.removeItem('gameId');
-	setInfo('The game is over!', true);
-	gameId = '';
-	player = Object.assign({}, DEFAULT_PLAYER_STATE);
-	$('#game-id').val('');
-	enableForms();
-	$('#join-game').show();
+function handleGameOver() {
+  removePlayerStateFromLocalStorage();
+  getIdleMessageBox().html('The game is over!');
+  getGameIdInput().val('');
+	resetPlayerState();
 }
 
-function getEvent(eventName, playerState = player) {
-	let defaultEvent = {
-		headline: playerState.ask.question,
-		info: 'Done for now! Waiting on other players...',
-		body: '',
-		button: playerState.ask.options.length == 1 ? playerState.ask.options[0].text : 'Submit',
-		buttonDelay: 0,
-	};
-	
-		
-	if (typeof events[eventName] == 'function') {
-		var e = events[eventName](playerState);
-		e = Object.assign(defaultEvent, e);
-	} else if (typeof events[eventName] != 'undefined') {
-		var e = events[eventName];
-		e = Object.assign(defaultEvent, e);
-	} else {
-		var e = defaultEvent;
-	}
-		
-	return e;
-}
-
-function renderPlayerActionForm(playerState = player) {
-
-	// render the prompt	
-	// reset the form
+function renderPlayTurnForm(playerState = globalPlayerState) {
 	$('.player-action-option').remove();
 
-	$('#player-info').hide();
+  let e = getEvent(playerState.ask.playerAction, playerState);
 
-	let e = getEvent(playerState.ask.playerAction, playerState);
-
-	$('#player-info').html(e.info);
+	getIdleMessageBox().html(e.info);
 
 	let headline = $(document.createElement('h3'));
 	headline.addClass('player-action-headline');
@@ -272,10 +361,41 @@ function renderPlayerActionForm(playerState = player) {
 	}
 	$('#player-action-name').replaceWith(action);			
 	$('.player-action-submit').replaceWith(button);
-	$('#player-action').show();
-	enableForms();
+
 	activateButtonAfterDelay($('.player-action-submit button'), e.buttonDelay, e.button);
 
+}
+
+function setError(err = '') {
+  if (err) {
+    getErrorMessageBox().html(err);
+    getErrorMessageBox().show();
+  } else {
+    getErrorMessageBox().hide();
+  }
+}
+
+function getEvent(eventName, playerState = player) {
+	let defaultEvent = {
+		headline: playerState.ask.question,
+		info: 'Done for now! Waiting on other players...',
+		body: '',
+		button: playerState.ask.options.length == 1 ? playerState.ask.options[0].text : 'Submit',
+		buttonDelay: 0,
+	};
+	
+		
+	if (typeof events[eventName] == 'function') {
+		var e = events[eventName](playerState);
+		e = Object.assign(defaultEvent, e);
+	} else if (typeof events[eventName] != 'undefined') {
+		var e = events[eventName];
+		e = Object.assign(defaultEvent, e);
+	} else {
+		var e = defaultEvent;
+	}
+		
+	return e;
 }
 
 function activateButtonAfterDelay(buttonElem, delaySeconds, doneText) {
@@ -285,104 +405,6 @@ function activateButtonAfterDelay(buttonElem, delaySeconds, doneText) {
 		setTimeout(activateButtonAfterDelay, 1000, buttonElem, delaySeconds - 1, doneText);
 	} else {
 		buttonElem.html(doneText);
-	}
-}
-
-function updatePlayerState(newState, forceRenderPlayerActionForm = false) {
-	console.log(`updatePlayerState name=${newState.name} gameId=${newState.gameId} version=${newState.version} playerAction=${newState.ask.playerAction} complete=${newState.ask.complete}`);
-
-	// ignore states that aren't part of the game we think we're in
-	if (newState.gameId != gameId) return console.warn(`Ignoring state for invalid gameId=${newState.gameId}`);
-	// ignore states that are older than the version we already have
-	if (newState.version < player.version) return console.warn(`Ignoring out of sequence player state: version=${newState.version}`);
-	// if the game is over, reset the game so the player can join again and return
-	if (newState.gameOver) return onGameOver();
-
-	$('#join-game').hide();
-
-	localStorage.setItem('gameId', gameId);
-	localStorage.setItem('playerName', newState.name);		
-
-	document.title = `Secret Hitler dot TV - ${escapeHtml(newState.name)} - ${gameId}`;
-
-	// render the form if action is not complete and the action or complete status has changed
-	// ensures that the same form isn't rerendered twice
-	if (!newState.ask.complete && (player.ask.playerAction !== newState.ask.playerAction || player.ask.complete)) {
-		renderPlayerActionForm(newState);
-	}
-
-	player = newState;
-
-}
-
-function setInfo(msg = '', show = false) {
-
-		$('#player-info').html(msg);
-		if (show) {
-			$('#player-info').show();
-		}
-
-}
-
-function setError(err = '') {
-	if (err) {
-		$('#error').html(err);
-		$('#error').show();
-	} else {
-		$('#error').hide();
-	}
-}
-
-function onConnect() {
-	socket.emit('authenticate', credentials, (response) => {
-		if (response.error) {
-			setError(response.error);
-		} else {
-			setError();
-			credentials = response;
-			console.log(`Authenticated as ${JSON.stringify(credentials)}`);
-			localStorage.setItem('credentials', JSON.stringify(credentials));
-			enableForms();
-		}
-	});
-}
-
-function afterJoinGame(response = {}) {
-	enableForms();
-	if (response.error) {
-		setError(response.error);
-	} else {
-		if (!playerState.gameStarted) {
-			setInfo("You're in! Waiting for more players to join...");
-		} else {
-			setInfo("Welcome back!");
-		}
-		$('#player-info').show();
-		$('#join-game').hide();
-		$('#error').hide();
-	}
-}
-
-function play (e) {
-	e.preventDefault();	
-	disableForms();
-	$('#error').hide();
-	
-	if ($('.player-action-option>input:checked').val() !== undefined) {
-		let playerAction = $('#player-action-name').val();
-		let data = $('.player-action-option>input:checked').val();
-		socket.emit('playTurn', { action: playerAction, value: data }, (response) => {
-			enableForms();
-			if (response.error) {
-				setError(response.error);
-			} else {
-				$('#player-action').hide();
-				$('#player-info').show();	
-			}
-		});
-	} else {
-		setError("Please select an option to proceed.");
-		enableForms();
 	}
 }
 
