@@ -175,9 +175,9 @@ const ROUTE_TABLE = [
 
 ];
 
-const game = new SecretHitlerGame();
-const renderer = new GameRenderer();
-const controller = new GameController(game, renderer);
+var game;
+var renderer;
+var controller;
 
 const TESTS = {
 
@@ -315,6 +315,9 @@ const TESTS = {
 
 
 function init() {
+	game = new SecretHitlerGame();
+	renderer = new GameRenderer();
+	controller = new GameController(game, renderer);
 	document.getElementById("game-wrapper").appendChild(renderer.app.view);
 }
 
