@@ -58,8 +58,10 @@ class GameController {
 	}
 
 	startPreload () {
-		if (!this.isPreloadStarted)
+		if (!this.isPreloadStarted) {
+			this.isPreloadStarted = true;
 			this.renderer.preload(assets);
+		}
 	}
 
 	afterPreload () {
