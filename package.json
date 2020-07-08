@@ -17,6 +17,7 @@
   "url": "https://github.com/mjspadaro/secret-hitler-dot-tv.git"
  },
  "devDependencies": {
+  "babel-cli": "^6.26.0",
   "console.table": "^0.10.0",
   "node-sass": "^4.14.1",
   "socket.io-client": "^2.3.0",
