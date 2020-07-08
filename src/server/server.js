@@ -11,15 +11,15 @@ const Message = require(`${__dirname}/message.js`);
 
 app.engine('html', require('ejs').renderFile);
 app.get('/', function(req, res) {
-	res.render(__dirname + '/public/player.html', {version: process.env.npm_package_version});
+	res.render(__dirname + '/../../public/player.html', {version: process.env.npm_package_version});
 });
 app.get('/host', function(req, res) {
-	res.render(__dirname + '/public/host.html', {version: process.env.npm_package_version});
+	res.render(__dirname + '/../../public/host.html', {version: process.env.npm_package_version});
 });
-app.use('/images', express.static(__dirname + '/public/images'));
-app.use('/js', express.static(__dirname + '/public/js'));
-app.use('/css', express.static(__dirname + '/public/css'));
-app.use('/fonts', express.static(__dirname + '/public/fonts'));
+app.use('/images', express.static(__dirname + '/../../public/images'));
+app.use('/js', express.static(__dirname + '/../../public/js'));
+app.use('/css', express.static(__dirname + '/../../public/css'));
+app.use('/fonts', express.static(__dirname + '/../../public/fonts'));
 
 console.log('SECRETHITLER.TV SERVER -- RUNNING VERSION ' + process.env.npm_package_version);
 http.listen(LISTEN_PORT, function() {

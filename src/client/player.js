@@ -1,3 +1,5 @@
+"use strict";
+
 var socket;
 
 const UI_JOIN = 'ui_join';
@@ -19,6 +21,7 @@ const DEFAULT_PLAYER_STATE = { name: '', ask: {playerAction: '', complete: true}
 var credentials = JSON.parse(localStorage.getItem('credentials')) || {};
 var lastTurnCount = -1;
 var globalUIState;
+var globalPlayerState = {...DEFAULT_PLAYER_STATE };
 
 const resetPlayerState = () => globalPlayerState = Object.assign({}, DEFAULT_PLAYER_STATE);
 const savePlayerStateToLocalStorage = (state = globalPlayerState) => localStorage.setItem('playerState', JSON.stringify(state));
@@ -277,7 +280,8 @@ function handleUpdatePlayerState (payload, callback) {
 	savePlayerStateToLocalStorage(globalPlayerState);
 	if (isGameOver())
 		handleGameOver();
-  renderUIState();
+	else
+  	renderUIState();
 }
 
 function renderUIState (UIState = getUIStateFromPlayerState()) {
@@ -303,7 +307,8 @@ function renderUIState (UIState = getUIStateFromPlayerState()) {
 function handleGameOver() {
   removePlayerStateFromLocalStorage();
   getIdleMessageBox().html('The game is over!');
-  getGameIdInput().val('');
+	getGameIdInput().val('');
+	renderUIState(UI_GAME_OVER);
 	resetPlayerState();
 }
 
@@ -357,7 +362,7 @@ function renderPlayTurnForm(playerState = globalPlayerState) {
 	// build the form html
 	$('#player-action>h3').replaceWith(headline);
 	$('.player-action-body').replaceWith(body);
-	for (r of radios) {
+	for (let r of radios) {
 		$('.player-action-submit').before(r);
 	}
 	$('#player-action-name').replaceWith(action);			

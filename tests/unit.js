@@ -1,9 +1,9 @@
 var test = require('tape');
 const redis = require("redis");
-const Database = require(`../database.js`);
-const Client = require(`../client.js`);
-const Event = require(`../event.js`);
-const Message = require(`../message.js`);
+const Database = require(`../src/server/database.js`);
+const Client = require(`../src/server/client.js`);
+const Event = require(`../src/server/event.js`);
+const Message = require(`../src/server/message.js`);
 
 test.onFinish(() => Database.quitAll());
 const getRandomString = () => Math.ceil(Math.random() * 100000).toString();

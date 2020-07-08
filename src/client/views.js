@@ -1,3 +1,5 @@
+"use strict";
+
 // this is a bit of a hack, because the current structure doesn't let us get textures to the helper classes
 // in the future, this should probably be handled by a "component" class or something like that
 // that can be instanced by the view and reused across views
@@ -668,7 +670,7 @@ const VIEW_CLASSES = [
 			let host = document.location.host == "app.secrethitler.tv" ? "secrethitler.tv" : document.location.host;
 			
 			this.setHeadline(`To join, go to ${host} and enter game code: ${e.state.id}`);
-			for (p in e.state.players) {
+			for (let p in e.state.players) {
 				this.addCard(this.resources.playerFolder.texture, this.resources.playerFolder.texture, p.name);			
 			}
 		}

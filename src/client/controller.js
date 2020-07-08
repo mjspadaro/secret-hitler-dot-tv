@@ -1,3 +1,5 @@
+"use strict";
+
 class GameController {
 	
 	constructor (game, renderer) {
