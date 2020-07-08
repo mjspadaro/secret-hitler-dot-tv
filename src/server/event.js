@@ -3,6 +3,7 @@ const {pipe} = require(`${__dirname}/common.js`);
 const Database = require(`${__dirname}/database.js`);
 const Game = require(`${__dirname}/game.js`);
 const Message = require(`${__dirname}/message.js`);
+const QUIET_MODE = process.argv.includes('--quiet');
 
 const CLIENT_TTL = 60 * 60 * 24; // set client to expire from database 24 hours after last active
 
@@ -12,7 +13,7 @@ const createHandler = (event, client) => {
   return (payload = {}, callback = () => true) => {
     const addResponse = async (event) => ({response: await event.responder(event), ...event});
     const sendResponse = (event) => { event.callback(event.response); return event; };
-    const logEvent = (event) => { console.log(event); return event; }
+    const logEvent = (event) => { if (!QUIET_MODE) console.log(event); return event; }
     const handleError = (error) => { 
       const response = {error: 'An unexpected server error has occurred.'};
       callback(response);

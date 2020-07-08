@@ -1,4 +1,5 @@
 const LISTEN_PORT = process.env.PORT ? process.env.PORT : 3000;
+const QUIET_MODE = process.argv.includes('--quiet');
 const express = require('express');
 const app = express();
 
@@ -21,9 +22,11 @@ app.use('/js', express.static(__dirname + '/../../public/js'));
 app.use('/css', express.static(__dirname + '/../../public/css'));
 app.use('/fonts', express.static(__dirname + '/../../public/fonts'));
 
-console.log('SECRETHITLER.TV SERVER -- RUNNING VERSION ' + process.env.npm_package_version);
+if (!QUIET_MODE)
+	console.log('SECRETHITLER.TV SERVER -- RUNNING VERSION ' + process.env.npm_package_version);
 http.listen(LISTEN_PORT, function() {
-	console.log('listening on *:' + LISTEN_PORT);
+	if (!QUIET_MODE)
+		console.log('listening on *:' + LISTEN_PORT);
 });
 
 io.on('connection', Client.handleConnect);
