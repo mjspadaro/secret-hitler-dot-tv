@@ -25,10 +25,10 @@
  },
  "scripts": {
   "build-css": "node-sass public/css/player.scss public/css/player.css",
-  "start": "node server.js",
+  "start": "node ./src/server/server.js",
   "dbstart": "gcloud beta emulators datastore start",
-  "devstart": "node --inspect server.js",
-  "devstart-multi": "node server.js & export PORT=3001 && node server.js",
+  "devstart": "node --inspect ./src/server/server.js",
+  "devstart-multi": "node ./src/server/server.js & export PORT=3001 && node ./src/server/server.js",
   "deploy-staging": "gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')",
   "deploy-production": "gcloud beta app deploy --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')"
  },
