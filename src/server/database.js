@@ -37,7 +37,7 @@ const quitAll = () => [redisClient, publisher, subscriber].forEach(quit);
 
 const createRedisClientAsync = () => {
   return new Promise((resolve, reject) => {
-    const client = redis.createClient();
+    const client = redis.createClient(REDISPORT, REDISHOST);
     client.on('ready', () => resolve(client));
   });
 }
