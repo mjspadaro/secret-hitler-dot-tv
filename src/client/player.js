@@ -280,7 +280,8 @@ function handleUpdatePlayerState (payload, callback) {
 	savePlayerStateToLocalStorage(globalPlayerState);
 	if (isGameOver())
 		handleGameOver();
-  renderUIState();
+	else
+  	renderUIState();
 }
 
 function renderUIState (UIState = getUIStateFromPlayerState()) {
