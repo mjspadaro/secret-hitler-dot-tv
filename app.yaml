@@ -6,6 +6,11 @@ env: flex
 manual_scaling:
   instances: 1
 
+env_variables:
+  REDISHOST: '10.61.10.235'
+  REDISPORT: '6379'
+
 network:
+  name: default
   session_affinity: true
 # [END appengine_websockets_yaml]

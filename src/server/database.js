@@ -2,9 +2,12 @@ const { promisify } = require("util");
 const redis = require("redis");
 const { promises } = require("fs");
 
-const redisClient = redis.createClient();
-const publisher = redis.createClient();
-const subscriber = redis.createClient();
+const REDISHOST = process.env.REDISHOST || 'localhost';
+const REDISPORT = process.env.REDISPORT || 6379;
+
+const redisClient = redis.createClient(REDISPORT, REDISHOST);
+const publisher = redis.createClient(REDISPORT, REDISHOST);
+const subscriber = redis.createClient(REDISPORT, REDISHOST);
 
 const dbHandleError = (err) => console.error(`Database error: ${err}`);
 redisClient.onError = dbHandleError;
