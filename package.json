@@ -35,8 +35,8 @@
   "test" : "node ./tests/unit.js --quiet && node ./src/server/server.js --quiet & node ./tests/function.js && pkill -SIGINT node || pkill -SIGINT node",
   "start-dev": "npm run build-js-watch & npm run debug",
   "devstart-multi": "node ./src/server/server.js & export PORT=3001 && node ./src/server/server.js",
-  "deploy-staging": "npm build-js && gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')",
-  "deploy-production": "npm build-js && gcloud beta app deploy --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')"
+  "deploy-staging": "npm run build-js && gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')",
+  "deploy-production": "npm run build-js && gcloud beta app deploy --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')"
  },
  "engines": {
   "node": "12.x"
