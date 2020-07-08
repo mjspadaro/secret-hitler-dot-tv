@@ -2,9 +2,8 @@
 runtime: nodejs
 env: flex
 
-# going to need to stick to a single instance unless we build in load balancing to keep players in the same game on the same instance
-manual_scaling:
-  instances: 1
+automatic_scaling:
+  min_num_instances: 1
 
 env_variables:
   REDISHOST: '10.61.10.235'
