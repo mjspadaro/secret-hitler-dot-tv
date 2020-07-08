@@ -498,7 +498,7 @@ SecretHitlerGame.prototype.getChancellor = function () {
 
 // removes term limits for all players
 SecretHitlerGame.prototype.resetTermLimits = function () {
-	for (p of this.players) {
+	for (let p of this.players) {
 		p.isTermLimited = false;
 	}
 }
@@ -690,7 +690,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 		beforeNomination : function () {
 		
 			// clear the nominee and move the president to the next player
-			for (p of this.players) {
+			for (let p of this.players) {
 				p.isNominee = false;
 				p.isChancellor = false;
 			}
@@ -738,7 +738,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 				{ text: this.t.startElection.nein, value: 0 }
 			];
 
-			for (p of this.getEligibleVoters()) {
+			for (let p of this.getEligibleVoters()) {
 				p.ballot = 0;
 				p.input(this.t.startElection.question, options, 'vote')
 			}
@@ -758,7 +758,7 @@ SecretHitlerGame.prototype.update = function (eventName, player = { id: '', name
 			var nominee = this.getNominee();
 			var president = this.getPresident();
 			
-			for (p of voters) {
+			for (let p of voters) {
 				jaCount += p.ballot
 			}
 

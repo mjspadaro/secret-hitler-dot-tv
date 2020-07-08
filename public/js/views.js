@@ -668,7 +668,7 @@ const VIEW_CLASSES = [
 			let host = document.location.host == "app.secrethitler.tv" ? "secrethitler.tv" : document.location.host;
 			
 			this.setHeadline(`To join, go to ${host} and enter game code: ${e.state.id}`);
-			for (p in e.state.players) {
+			for (let p in e.state.players) {
 				this.addCard(this.resources.playerFolder.texture, this.resources.playerFolder.texture, p.name);			
 			}
 		}
