@@ -17,7 +17,9 @@
   "url": "https://github.com/mjspadaro/secret-hitler-dot-tv.git"
  },
  "devDependencies": {
-  "babel-cli": "^6.26.0",
+  "@babel/cli": "^7.10.4",
+  "@babel/core": "^7.10.4",
+  "@babel/preset-env": "^7.10.4",
   "console.table": "^0.10.0",
   "node-sass": "^4.14.1",
   "socket.io-client": "^2.3.0",
@@ -25,6 +27,7 @@
  },
  "scripts": {
   "build-css": "node-sass public/css/player.scss public/css/player.css",
+  "build-js": "babel ./src/client -d ./public/js",
   "start": "node ./src/server/server.js",
   "dbstart": "gcloud beta emulators datastore start",
   "devstart": "node --inspect ./src/server/server.js",
