@@ -10,6 +10,8 @@ class GameController {
 		this.credentials = {};
 		this.routes = [];
 		this.views = this.renderer.views;
+
+		this.isPreloadStarted = false;
 		
 		this.socket.on('connect', this.onConnect.bind(this));
 		this.socket.on('addPlayer', this.addPlayer.bind(this));
@@ -56,7 +58,8 @@ class GameController {
 	}
 
 	startPreload () {
-		this.renderer.preload(assets);
+		if (!this.isPreloadStarted)
+			this.renderer.preload(assets);
 	}
 
 	afterPreload () {
