@@ -27,10 +27,12 @@
  },
  "scripts": {
   "build-css": "node-sass public/css/player.scss public/css/player.css",
-  "build-js": "babel ./src/client -d ./public/js",
+  "build-js": "babel ./src/client --out-dir ./public/js --out-file-extension .dist.js",
+  "build-js-watch": "npm run build-js -- --watch",
   "start": "node ./src/server/server.js",
   "dbstart": "gcloud beta emulators datastore start",
-  "devstart": "node --inspect ./src/server/server.js",
+  "debug": "node --inspect ./src/server/server.js",
+  "start-dev": "npm run build-js-watch & npm run debug",
   "devstart-multi": "node ./src/server/server.js & export PORT=3001 && node ./src/server/server.js",
   "deploy-staging": "gcloud beta app deploy --no-promote --no-stop-previous-version --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')",
   "deploy-production": "gcloud beta app deploy --project=secrethitlerdottv --version=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[\",]//g' | sed 's/\\./\\-/g' | tr -d '[[:space:]]')"
