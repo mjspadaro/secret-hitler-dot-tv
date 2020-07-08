@@ -26,16 +26,10 @@ const createEventLogText = (event) => {
   try {
     return JSON.stringify({
       severity: LOG_SEVERITY.INFO,
-      labels: {
-        clientId: event.client.getClientId(),
-        eventName: event.name,
-      },
-      jsonPayload: {
-        clientId: event.client.getClientId(),
-        eventName: event.name,
-        eventPayload: event.payload,
-        response: event.response
-      }
+      clientId: event.client.getClientId(),
+      eventName: event.name,
+      eventPayload: event.payload,
+      response: event.response
     });
   } catch (e) {
     return JSON.stringify({
