@@ -1,3 +1,5 @@
+"use strict";
+
 class PixiTransition {
 	
 	constructor (displayObject, options = {}, callback = () => true) {

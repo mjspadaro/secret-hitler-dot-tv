@@ -1,3 +1,5 @@
+"use strict";
+
 // this is a bit of a hack, because the current structure doesn't let us get textures to the helper classes
 // in the future, this should probably be handled by a "component" class or something like that
 // that can be instanced by the view and reused across views

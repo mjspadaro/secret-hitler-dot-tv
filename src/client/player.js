@@ -1,3 +1,5 @@
+"use strict";
+
 var socket;
 
 const UI_JOIN = 'ui_join';

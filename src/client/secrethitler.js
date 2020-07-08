@@ -1,3 +1,5 @@
+"use strict";
+
 /**********************  GAME   ************************/
 
 function SecretHitlerGame(gameId = '') {

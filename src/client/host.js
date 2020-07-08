@@ -1,3 +1,5 @@
+"use strict";
+
 const ASSET_BASE_URL = "images";
 
 const assets = [
