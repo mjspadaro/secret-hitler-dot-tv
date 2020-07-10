@@ -23,7 +23,7 @@ app.use('/css', express.static(__dirname + '/../../public/css'));
 app.use('/fonts', express.static(__dirname + '/../../public/fonts'));
 
 if (!QUIET_MODE)
-	console.log('SECRETHITLER.TV SERVER -- RUNNING VERSION ' + process.env.npm_package_version);
+	console.log('SECRETHITLER.TV SERVER -- RUNNING VERSION ' + process.env.npm_package_version + ` (${process.env.NODE_ENV})`);
 http.listen(LISTEN_PORT, function() {
 	if (!QUIET_MODE)
 		console.log('listening on *:' + LISTEN_PORT);

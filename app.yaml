@@ -8,6 +8,7 @@ automatic_scaling:
 env_variables:
   REDISHOST: '10.61.10.235'
   REDISPORT: '6379'
+  NODE_ENV: 'production'
 
 network:
   name: default
