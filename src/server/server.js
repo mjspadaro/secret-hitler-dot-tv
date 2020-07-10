@@ -2,6 +2,7 @@ const LISTEN_PORT = process.env.PORT ? process.env.PORT : 3000;
 const QUIET_MODE = process.argv.includes('--quiet');
 const express = require('express');
 const app = express();
+const httpsRedirect = require('./https-redirect.js');
 
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
@@ -21,6 +22,10 @@ app.use('/images', express.static(__dirname + '/../../public/images'));
 app.use('/js', express.static(__dirname + '/../../public/js'));
 app.use('/css', express.static(__dirname + '/../../public/css'));
 app.use('/fonts', express.static(__dirname + '/../../public/fonts'));
+
+const httpsPort = app.get('https-port');
+app.use(httpsRedirect({httpsPort: httpsPort}));
+app.set('trust proxy', true)
 
 if (!QUIET_MODE)
 	console.log('SECRETHITLER.TV SERVER -- RUNNING VERSION ' + process.env.npm_package_version + ` (${process.env.NODE_ENV})`);
