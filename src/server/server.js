@@ -12,6 +12,8 @@ const {subscriber} = require(`${__dirname}/database.js`);
 const Message = require(`${__dirname}/message.js`);
 
 app.engine('html', require('ejs').renderFile);
+app.use(httpsRedirect);
+app.set('trust proxy', true);
 app.get('/', function(req, res) {
 	res.render(__dirname + '/../../public/player.html', {version: process.env.npm_package_version});
 });
@@ -23,9 +25,6 @@ app.use('/js', express.static(__dirname + '/../../public/js'));
 app.use('/css', express.static(__dirname + '/../../public/css'));
 app.use('/fonts', express.static(__dirname + '/../../public/fonts'));
 
-const httpsPort = app.get('https-port');
-app.use(httpsRedirect({httpsPort: httpsPort}));
-app.set('trust proxy', true)
 
 if (!QUIET_MODE)
 	console.log('SECRETHITLER.TV SERVER -- RUNNING VERSION ' + process.env.npm_package_version + ` (${process.env.NODE_ENV})`);
