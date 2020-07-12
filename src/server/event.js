@@ -3,53 +3,31 @@ const {pipe} = require(`${__dirname}/common.js`);
 const Database = require(`${__dirname}/database.js`);
 const Game = require(`${__dirname}/game.js`);
 const Message = require(`${__dirname}/message.js`);
-const QUIET_MODE = process.argv.includes('--quiet');
+const Log = require(`${__dirname}/log.js`);
 
-const LOG_SEVERITY = {
-  // LOG LEVELS FROM GOOGLE CLOUD
-  DEFAULT: 0, // DEFAULT	(0) The log entry has no assigned severity level.
-  DEBUG: 100,  // DEBUG	(100) Debug or trace information.
-  INFO: 200,  // INFO	(200) Routine information, such as ongoing status or performance.
-  NOTICE: 300,  // NOTICE	(300) Normal but significant events, such as start up, shut down, or a configuration change.
-  WARNING: 400,  // WARNING	(400) Warning events might cause problems.
-  ERROR: 500,  // ERROR	(500) Error events are likely to cause problems.
-  CRITICAL: 600,  // CRITICAL	(600) Critical events cause more severe problems or outages.
-  ALERT: 700,  // ALERT	(700) A person must take an action immediately.
-  EMERGENCY: 800  // EMERGENCY	(800) One or more systems are unusable.
-}
 
 const CLIENT_TTL = 60 * 60 * 24; // set client to expire from database 24 hours after last active
 
 const create = (event = {}) => ({ name: '', responder: () => true, ...event });
 
-const createEventLogText = (event) => {
-  let logObject = {};
-  try {
-    logObject =  {
-      severity: LOG_SEVERITY.INFO,
-      clientId: event.client ? event.client.getClientId() : '',
-      eventName: event.name,
-      eventPayload: event.payload,
-      response: event.response
-    };
-  } catch (e) {
-    logObject = {
-      severity: LOG_SEVERITY.WARNING,
-      testPayload: `Error creating log text: ${e}`
-    }
-  }
-  return process.env.NODE_ENV === 'development' ? logObject : JSON.stringify(logObject);
+const logEvent = (event = {}) => {
+  const clientId = typeof event.getClientId === 'function' ? event.getClientId() : '';
+  Log.info(`Event.${event.name}`, {
+    eventName: event.name,
+    clientId,
+    eventPayload: event.payload,
+    eventResponse: event.response
+  });
 }
 
 const createHandler = (event, client) => {
   return (payload = {}, callback = () => true) => {
     const addResponse = async (event) => ({response: await event.responder(event), ...event});
     const sendResponse = (event) => { event.callback(event.response); return event; };
-    const logEvent = (event) => { if (!QUIET_MODE) console.log(createEventLogText(event)); return event; }
     const handleError = (error) => { 
       const response = {error: 'An unexpected server error has occurred.'};
       callback(response);
-      logEvent({error, response, ...event});
+      Log.error('Event.error', {error, response, ...event});
     }
     pipe(addResponse, sendResponse, logEvent)({...event, client, payload, callback}).catch(handleError);
   }

@@ -1,5 +1,6 @@
 const Database = require(`${__dirname}/database.js`);
 const {pipe} = require(`${__dirname}/common.js`);
+const Log = require(`${__dirname}/log.js`);
 
 const MESSAGE_QUEUE_TTL = 60 * 60 * 24; // message queues expire in database 1 day after last message
 
@@ -7,7 +8,10 @@ const create = (message) => ({timestamp: Date.now(), ...message});
 
 const getClientChannelName = (clientId) => `client:${clientId}:messages`;
 
-const send = (message) => pipe(addToQueue, publish)(message);
+const logSendMessage = (message) => Log.info('Message.send', message);
+const logDeliverMessage = (message) => Log.info('Message.deliver', message);
+
+const send = (message) => pipe(addToQueue, publish, logSendMessage)(message);
 
 const addToQueue = async (message) => {
   await Database.addMessageToQueue(message.recipientId, message);
@@ -34,7 +38,10 @@ const deliverMessageToSocket = async (message, socket) => {
     removeFromQueue(message);
     return;
   }
-  socket.emit(message.eventName, message.payload, () => removeFromQueue(message));
+  socket.emit(message.eventName, message.payload, () => {
+    logDeliverMessage(message);
+    removeFromQueue(message);
+  });
 }
 
 const subscribeToClientMessages = (clientId) => Database.subscriber.subscribe(getClientChannelName(clientId));

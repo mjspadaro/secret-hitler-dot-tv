@@ -1,6 +1,7 @@
 const { promisify } = require("util");
 const redis = require("redis");
 const { promises } = require("fs");
+const Log = require(`${__dirname}/log.js`);
 
 const REDISHOST = process.env.REDISHOST || 'localhost';
 const REDISPORT = process.env.REDISPORT || 6379;
@@ -9,7 +10,7 @@ const redisClient = redis.createClient(REDISPORT, REDISHOST);
 const publisher = redis.createClient(REDISPORT, REDISHOST);
 const subscriber = redis.createClient(REDISPORT, REDISHOST);
 
-const dbHandleError = (err) => console.error(`Database error: ${err}`);
+const dbHandleError = (err) => Log.error(`Database.error`, { error: err });
 redisClient.onError = dbHandleError;
 
 const getCommandAsync = (client, command) => promisify(client[command]).bind(client);
