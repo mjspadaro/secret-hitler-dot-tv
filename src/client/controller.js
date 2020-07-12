@@ -75,7 +75,7 @@ class GameController {
 		console.log(`Host: gameState version=${state.version}`);
 		this.socket.emit('updateGameState', { gameState: state }, function (response) {
 			if (response.error) {
-				this.onError("Error: Unable to update game state on server. " + response.error);
+				this.onError("Error: Unable to update game state on server. " + response.error).bind(this);
 			} });
 	}
 	
@@ -84,7 +84,7 @@ class GameController {
 			this.game.id = gameId;
 			this.loop({ eventName: 'hostNewGame', playerId: '', playerName: 'Server', data: gameId, state: this.game.getState() }); 
 		} else {
-			this.onError("Server did not provide a game ID. " + msg)
+			this.onError("Server did not provide a game ID. ")
 		}
 	} 
 	
