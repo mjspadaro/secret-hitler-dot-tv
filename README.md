@@ -5,21 +5,12 @@ In this online implementation, players use their smartphone browser to play as t
 
 You can play the current (alpha) release at the project's official website: [secrethitler.tv](secrethitler.tv). This project is released under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode) license.
 
-## How to Contribute
-Contributions are welcome! The project is still in very early alpha release, and much more work is needed.
-
-On the back-end, the game is limited to running on a single server. If Redis is implemented to support [socket.io clustering](https://socket.io/docs/using-multiple-nodes/), this limitation could be removed. Ideally, Redis could also replace the need for Google Cloud Datastore.
-
-On the front-end, additional animations and visual effects are needed to play up the suspense of events. The game view layout is still also sort of awkward, with everything playing out in a lightbox (even though there's already a fully functional game board coded behind the scenes!).
-
-Any assistance is welcome. Although the code is not yet fully documented, I've tried to give the basic framework below for now.
-
 ## Under the Hood
-The game server runs on Node.js using  [Express](expressjs.com) as the web server and [socket.io](socket.io) providing real-time communication of events and game state information.
+The game server runs on Node.js using  [Express](expressjs.com) as the web server and [socket.io](socket.io) providing real-time communication of events and game state information. It is designed to be horizontally scalable- that is to say that many instances can work together so long as they share a common Redis instance.
 
 The current production environment is Google App Engine (Flexible Environment).
 
-A small amount of game and player data is stored in a NoSQL database ([Google Cloud Datastore](https://cloud.google.com/datastore)). The database is there for persistence and to support multiple threads or server instances in the future.
+Redis is used for persistence of player and game data while games are in progress, as well as pub/sub to allow for sending messages between clients across instances of the server.
 
 There are two clients: one for the host screen and another for the players. The host client uses [PixiJS](https://www.pixijs.com/) as the renderer (HTML5/WebGL). The host client also handles manipulation of the game state. The player client is lightweight and mobile friendly, requiring only HTML/CSS and [jQuery](jquery.com).
 
@@ -30,15 +21,17 @@ The server-side code runs on [Node.js](nodejs.org) 12.x. See their website for i
 Dependencies are listed in the package.json file, so they can be installed by running
 
     npm install
-### Install the Database Emulator
-The server code relies on a database for persistence as well as to support multiple threads or instances in the future. The database can be emulated by installing the [Google Cloud Datastore Emulator](https://cloud.google.com/datastore/docs/tools/datastore-emulator). See site for instructions.
+### Install Redis Server
+The server code relies on redis for persistence as well as pub/sub to allow for players to communicate across instances of the server. See [Redis quickstart](https://redis.io/topics/quickstart) for installation instructions.
 ### Starting the Server
-Before starting the server, be sure and start the Google Cloud Datastore Emulator with the following command:
+The server can be started in production mode with:
 
-    gcloud beta emulators datastore start
-Then, the game server can be started with:
+    npm start
+Or in development mode with:
 
-    node server.js
+    npm run start-dev
+The development mode script performs several useful functions, including compiling the client-side code (using Babel- in watch mode to re-compile if the code is changed with the server is running). A Node.js debugger can also be attached at the default port of 9229 when in development mode.
+
 To start a new game as host, point your web browser to http://localhost:3000/host. Players should use their phones to browse to http://localhost:3000 to join the game. It is recommended that the host screen be set up so that all players can see it- either on a television, monitor, or through screen sharing in a video call.
 
 ### Deploying to Google Cloud
@@ -54,7 +47,7 @@ This script does not stop old versions or direct traffic to the new version, tha
 ## Code Design
 The server is mainly a go-between for the players and host. 
 
-The bulk of the game logic and presentation is handled with client-side javascript on the host computer using a MODEL-VIEW-CONTROLLER design approach.
+The bulk of the game logic and presentation is handled with client-side javascript on the host computer using a MODEL-VIEW-CONTROLLER design approach. Note that the client-side source code is kept in the /src/client directory, and is compiled to ES5 by the start-dev or deployment scripts for backwards compatibility. The compiled code destination is the /public/js folder. Compiled js files will have the .dist.js extension. These files should not be modified directly and in fact are ignored by git.
 
 Here are the core base classes that the host uses to run the game:
 ### SecretHitlerGame
