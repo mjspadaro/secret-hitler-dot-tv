@@ -21,7 +21,26 @@ const output = (log) => {
   if (QUIET_MODE)
     return;
   const isDevelopmentEnvironment = process.env.NODE_ENV === 'development';
-  console.log( isDevelopmentEnvironment ? { message: log.message, severity: log.severity, payload: log } : JSON.stringify(log));
+  if (isDevelopmentEnvironment)
+    outputDevelopmentLog(log);
+  else 
+    outputProductionLog(log);
+}
+
+const outputProductionLog = (log) => console.log(JSON.stringify(log));
+const outputDevelopmentLog = (log) => getConsoleLogger(log)({
+  message: log.message,
+  severity: log.severity,
+  payload: log });
+
+const getConsoleLogger = (log) => {
+  if (log.severity >= LOG_SEVERITY.ERROR)
+    return console.error
+  if (log.severity >= LOG_SEVERITY.WARNING)
+    return console.warn
+  if (log.severity >= LOG_SEVERITY.NOTICE)
+    return console.info
+  return console.log
 }
 
 const createAndOutput = (message, payload, severity) => output(create(message, payload, severity));
