@@ -23,20 +23,22 @@ const CLIENT_TTL = 60 * 60 * 24; // set client to expire from database 24 hours 
 const create = (event = {}) => ({ name: '', responder: () => true, ...event });
 
 const createEventLogText = (event) => {
+  let logObject = {};
   try {
-    return JSON.stringify({
+    logObject =  {
       severity: LOG_SEVERITY.INFO,
-      clientId: event.client.getClientId(),
+      clientId: event.client ? event.client.getClientId() : '',
       eventName: event.name,
       eventPayload: event.payload,
       response: event.response
-    });
+    };
   } catch (e) {
-    return JSON.stringify({
+    logObject = {
       severity: LOG_SEVERITY.WARNING,
       testPayload: `Error creating log text: ${e}`
-    })
+    }
   }
+  return process.env.NODE_ENV === 'development' ? logObject : JSON.stringify(logObject);
 }
 
 const createHandler = (event, client) => {
@@ -80,13 +82,14 @@ const handleAuthenticate = async (event) => {
 }
 
 const handleJoinGame = async (event) => {
-  const { playerName, gameCode } = event.payload;
+  const playerName = event.payload.playerName;
+  const gameCode = '' + event.payload.gameCode.toUpperCase();
   const clientId = event.client.getClientId();
   if (!clientId) return createErrorResponse('Client is not authenticated');
   if (!gameCode) return createErrorResponse('Game code is missing');
   if (!playerName) return createErrorResponse('Player name is missing');
   const game = await Game.get(gameCode);
-  if (!game) return createErrorResponse('Game not found');
+  if (!game.code) return createErrorResponse('Game not found');
   if (Database.getClientGameCode(clientId) == gameCode) return {};
   Game.addPlayer(game, clientId, playerName);
   await Database.setClientExpire(clientId, CLIENT_TTL);

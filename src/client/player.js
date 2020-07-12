@@ -208,7 +208,7 @@ function handleJoinGameSubmit(submitEvent) {
 	const formError = handleFormSubmit(submitEvent);
 	if (formError) return;
 	let playerName = getPlayerNameInput().val();
-	let gameId = getGameIdInput().val();
+	let gameId = getGameIdInput().val().toUpperCase();
 	if (playerName.length < 1) {
 		setError("Don't forget to enter your name!");
     updateUIState(UI_JOIN);
