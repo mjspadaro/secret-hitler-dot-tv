@@ -49,6 +49,8 @@ const updateState = async (game, state = create().state) => {
   return { ...game, state };
 } 
 
+const onlyHumanPlayers = (player) => !player.isAI;
+
 const sendStateToPlayers = async (game) => {
   const createGameStateMessage = (player) => Message.create({
     recipientId: player.id,
@@ -57,7 +59,7 @@ const sendStateToPlayers = async (game) => {
     eventName: 'updatePlayerState',
     payload: { playerState: player }
   });
-  game.state.players.map(createGameStateMessage).map(Message.send);
+  game.state.players.filter(onlyHumanPlayers).map(createGameStateMessage).map(Message.send);
 }
 
 module.exports = {
